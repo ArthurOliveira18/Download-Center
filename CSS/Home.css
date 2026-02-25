@@ -1,19 +1,31 @@
 * {
     margin: 0;
     padding: 0;
+    font-family: system-ui;
+}
+p{
+    color: #474747;
 }
 
-hr {
+
+header {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    gap: 1rem;
+   
+}
+
+header hr {
+    width: 100%;
     border: none;
     height: 1px;
     background-color: #3434342f;
 }
 
-header {
-    font-family: system-ui;
-    justify-content: center;
-    display: flex;
-}
+
+
 
 /* Estilizando o Icon de download */
 .title-download-center .material-symbols-outlined {
@@ -22,12 +34,28 @@ header {
 }
 
 .downloadCenter {
-    width: 90%;
+    width: 80%;
 }
 
-.title-download-center{
+.title-download-center {
     display: flex;
     justify-content: baseline;
     align-items: center;
+    gap: .50rem;
+    margin-top: 1rem;
+}
+
+
+.optionsHome{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 2rem;
+}
+
+
+.options{
+    display: flex;
+    justify-content: center;
     gap: .50rem;
 }
