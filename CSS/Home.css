@@ -1,0 +1,33 @@
+* {
+    margin: 0;
+    padding: 0;
+}
+
+hr {
+    border: none;
+    height: 1px;
+    background-color: #3434342f;
+}
+
+header {
+    font-family: system-ui;
+    justify-content: center;
+    display: flex;
+}
+
+/* Estilizando o Icon de download */
+.title-download-center .material-symbols-outlined {
+    font-size: 50px;
+    color: #c21b1b;
+}
+
+.downloadCenter {
+    width: 90%;
+}
+
+.title-download-center{
+    display: flex;
+    justify-content: baseline;
+    align-items: center;
+    gap: .50rem;
+}
