@@ -121,16 +121,13 @@ main {
   display: flex;
   flex-direction: column;
   margin-top: 1rem;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
   gap: 2rem;
 }
 
-.two-drivers{
-  display: flex;
-  justify-content: center;
-  gap: 2rem;
-  
-  
-}
+
+
 
 .drivers{
   background-color: #d0ddf3;
@@ -140,12 +137,18 @@ main {
   box-shadow: 0px 4px 6px #0000002b;
 }
 
-.drivers h1{
-  font-weight: 400;
+
+/*Estilização do titulo e texto das impressoras */
+.title-drivers{
+  font-weight: 600;
   font-size: 25px;
 }
 
+.text-drivers{
+  font-size: 20px;
+}
 
+/* 
 .driver-header {
   display: flex;
   justify-content: space-between;
@@ -165,4 +168,7 @@ main {
 .drivers.active .arrow {
   transform: rotate(180deg);
   transition: 0.3s;
-}
+} */
+
+
+
