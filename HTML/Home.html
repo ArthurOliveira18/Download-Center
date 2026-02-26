@@ -1,75 +1,82 @@
 <!doctype html>
 <html lang="en">
-  <head>
+
+<head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="../CSS/Home.css" />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined"
-      rel="stylesheet"
-    />
-    <script src="../JS/Home.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+   
     <title>Download Center 2.0</title>
-  </head>
+</head>
 
-  <body>
+<body>
     <header>
-      <div class="downloadCenter">
-        <div class="title-download-center">
-          <span class="material-symbols-outlined"> download </span>
-          <h1>Download Center</h1>
+        <div class="downloadCenter">
+            <div class="title-download-center">
+                <span class="material-symbols-outlined"> download </span>
+                <h1>Download Center</h1>
+            </div>
+
+            <div>
+                <p>Baixe aplicativos, drivers, utilitários e acesse tutoriais</p>
+            </div>
+            <br />
+            <hr />
         </div>
 
-        <div>
-          <p>Baixe aplicativos, drivers, utilitários e acesse tutoriais</p>
-        </div>
-        <br />
-        <hr />
-      </div>
+        <div class="optionsHome">
+            <div class="options">
+                <span class="material-symbols-outlined"> download </span>
+                <p>Drivers</p>
+            </div>
 
-      <div class="optionsHome">
-        <div class="options">
-          <span class="material-symbols-outlined"> download </span>
-          <p>Drivers</p>
-        </div>
+            <div class="options">
+                <span class="material-symbols-outlined"> build </span>
+                <p>Utilitários</p>
+            </div>
 
-        <div class="options">
-          <span class="material-symbols-outlined"> build </span>
-          <p>Utilitários</p>
-        </div>
+            <div class="options">
+                <span class="material-symbols-outlined"> inventory_2 </span>
+                <p>Aplicativos da Empresa</p>
+            </div>
 
-        <div class="options">
-          <span class="material-symbols-outlined"> inventory_2 </span>
-          <p>Aplicativos da Empresa</p>
+            <div class="options">
+                <span class="material-symbols-outlined"> menu_book </span>
+                <p>Tutorias</p>
+            </div>
         </div>
-
-        <div class="options">
-          <span class="material-symbols-outlined"> menu_book </span>
-          <p>Tutorias</p>
-        </div>
-      </div>
     </header>
 
+
     <main>
-      <div class="search-drivers">
-        <div>
-          <h1>Drivers de Impressora</h1>
-          <p>
-            Baixe os drivers para suas impressoras e acesse os tutoriais de
-            instalação
-          </p>
+
+        <!-- Buscar drivers -->
+        <div class="search-drivers">
+            <div>
+                <h1>Drivers de Impressora</h1>
+                <p>
+                    Baixe os drivers para suas impressoras e acesse os tutoriais de
+                    instalação
+                </p>
+            </div>
+
+            <div class="input-search-drivers">
+                <span class="material-symbols-outlined search-icon">search</span>
+                <input type="text" name="search-driver" id="search-driver"
+                    placeholder="Buscar driver ou marca da impressora" />
+            </div>
         </div>
 
-        <div class="input-search-drivers">
-          <span class="material-symbols-outlined search-icon">search</span>
-          <input
-            type="text"
-            name="search-driver"
-            id="search-driver"
-            placeholder="Buscar driver ou marca da impressora"
-          />
+
+        <div class="options-drivers">
+    
+
         </div>
-      </div>
+
     </main>
-  </body>
+
+    <script src="../JS/Home.js"></script>
+</body>
+
 </html>
