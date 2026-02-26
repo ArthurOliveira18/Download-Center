@@ -21,7 +21,8 @@ const drivers = [
         marca: "Elgin",
         modelos: ["Elgin i9", "Elgin i8", "Elgin i7"]
     },
-    
+   
+
 
 
 ];
@@ -54,12 +55,12 @@ drivers.forEach(driver => {
         textDrivers.classList.add("text-drivers")
 
         cardDrivers.appendChild(textDrivers)
-        
+
         driversDiv.appendChild(cardDrivers)
 
     });
 
-    
+
 
     options_driver.appendChild(driversDiv)
 
