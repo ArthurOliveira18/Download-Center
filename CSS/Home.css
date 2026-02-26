@@ -1,61 +1,114 @@
 * {
-    margin: 0;
-    padding: 0;
-    font-family: system-ui;
+  margin: 0;
+  padding: 0;
+  font-family: system-ui;
 }
-p{
-    color: #474747;
+p {
+  color: #474747;
 }
-
 
 header {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-direction: column;
-    gap: 1rem;
-   
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  gap: 1rem;
+  background-color: #fff;
+  padding-bottom: 1rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
 header hr {
-    width: 100%;
-    border: none;
-    height: 1px;
-    background-color: #3434342f;
+  width: 100%;
+  border: none;
+  height: 1px;
+  background-color: #3434342f;
 }
 
+body {
+  background-color: #f6f6f6;
+}
 
-
+main {
+  width: 80%;
+  display: flex;
+  justify-content: center;
+}
 
 /* Estilizando o Icon de download */
 .title-download-center .material-symbols-outlined {
-    font-size: 50px;
-    color: #c21b1b;
+  font-size: 50px;
+  color: #c21b1b;
 }
 
 .downloadCenter {
-    width: 80%;
+  width: 80%;
 }
 
 .title-download-center {
-    display: flex;
-    justify-content: baseline;
-    align-items: center;
-    gap: .50rem;
-    margin-top: 1rem;
+  display: flex;
+  justify-content: baseline;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.optionsHome {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2rem;
+}
+
+/* Animação dos headers */
+.options {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 10px 15px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+/* Animação dos headers */
+.options:hover {
+  background-color: #ffffff;
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+  transform: translateY(-3px);
+  color: #c21b1b;
+}
+
+/* Div com o input para buscar os drivers */
+.search-drivers {
+  display: flex;
+  justify-content: center;
+  align-items: baseline;
+  flex-direction: column;
+  width: 80%;
+  gap: 1rem;
+  margin-top: 2rem;
 }
 
 
-.optionsHome{
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 2rem;
+.input-search-drivers {
+  position: relative;
+  width: 50%;
+  display: flex;
+  align-items: center;
 }
 
+.input-search-drivers input {
+  width: 100%;
+  padding: 0.75rem 0.75rem 0.75rem 2.5rem; 
+  border-radius: 0.5rem;
+  border: 1px solid #ddd; 
+  outline: none;
+}
 
-.options{
-    display: flex;
-    justify-content: center;
-    gap: .50rem;
+.search-icon {
+  position: absolute;
+  left: 15px; 
+  color: #888;
+  font-size: 20px; 
+  pointer-events: none; 
 }
