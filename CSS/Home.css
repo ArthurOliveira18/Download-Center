@@ -130,16 +130,6 @@ main {
 
 
 
-
-.drivers {
-  background-color: #d0ddf3;
-  width: 50%;
-  padding: 1rem;
-  border-radius: .75rem;
-  box-shadow: 0px 4px 6px #0000002b;
-}
-
-
 /*Estilização do titulo e texto das impressoras */
 .title-drivers {
   font-weight: 600;
@@ -156,11 +146,23 @@ main {
   display: flex;
   justify-content: space-between;
   cursor: pointer;
+  background-color: #ca4a4a;
+  padding: 1rem;
+  border-radius: .75rem;
 }
 
 .expand-icon {
   font-size: 20px;
   transition: 0.3s;
+}
+
+.card-drivers {
+  background: #fff;
+  border-radius: 12px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
 .expand-icon.rotate {
@@ -169,8 +171,40 @@ main {
 
 .models-container {
   display: none;
+  gap: 5rem;
+
 }
 
 .models-container.active {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  margin-top: 1rem;
+ 
+}
+
+
+.buttons-drivers-div {
+  display: flex;
+  gap: 1rem;
+}
+
+.button-driver-download,
+.button-tutorial {
+  flex: 1;
+  border-radius: .5rem;
+  border: none;
+  padding: .50rem;
+}
+
+.button-driver-download{
+  background-color: rgb(54, 124, 168);
+  color: #fff;
+  cursor: pointer;
+}
+
+.button-tutorial{
+  background-color: rgb(31, 147, 56);
+  color: #fff;
+  cursor: pointer;
 }

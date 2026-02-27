@@ -73,7 +73,27 @@ drivers.forEach(driver => {
         textDrivers.textContent = modelsDrivers
         textDrivers.classList.add("text-drivers")
 
+        // Div para armazenar os buttons, seja ele o de download e o de tutorial
+        const buttonsDriversDiv = document.createElement("div")
+        buttonsDriversDiv.classList.add("buttons-drivers-div")
+
+        let buttonDriverDownload = document.createElement("button")
+        buttonDriverDownload.classList.add("button-driver-download")
+
+        let buttonTutorial = document.createElement("button")
+        buttonTutorial.classList.add("button-tutorial")
+
+        buttonDriverDownload.textContent = "Baixar Driver"
+        buttonTutorial.textContent = "Tutorial de Instalação"
+
+        buttonsDriversDiv.appendChild(buttonDriverDownload)
+        buttonsDriversDiv.appendChild(buttonTutorial)
+
+
+
+
         cardDrivers.appendChild(textDrivers)
+        cardDrivers.appendChild(buttonsDriversDiv)
         modelsContainer.appendChild(cardDrivers)
     })
 
