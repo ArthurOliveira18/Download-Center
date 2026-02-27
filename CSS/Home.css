@@ -3,6 +3,7 @@
   padding: 0;
   font-family: system-ui;
 }
+
 p {
   color: #474747;
 }
@@ -72,6 +73,7 @@ main {
   cursor: pointer;
   transition: all 0.3s ease;
 }
+
 /* Animação dos headers */
 .options:hover {
   background-color: #ffffff;
@@ -101,22 +103,22 @@ main {
 
 .input-search-drivers input {
   width: 100%;
-  padding: 0.75rem 0.75rem 0.75rem 2.5rem; 
+  padding: 0.75rem 0.75rem 0.75rem 2.5rem;
   border-radius: 0.5rem;
-  border: 1px solid #ddd; 
+  border: 1px solid #ddd;
   outline: none;
 }
 
 .search-icon {
   position: absolute;
-  left: 15px; 
+  left: 15px;
   color: #888;
-  font-size: 20px; 
-  pointer-events: none; 
+  font-size: 20px;
+  pointer-events: none;
 }
 
 
-.options-drivers{
+.options-drivers {
   width: 60%;
   display: flex;
   flex-direction: column;
@@ -129,7 +131,7 @@ main {
 
 
 
-.drivers{
+.drivers {
   background-color: #d0ddf3;
   width: 50%;
   padding: 1rem;
@@ -139,36 +141,36 @@ main {
 
 
 /*Estilização do titulo e texto das impressoras */
-.title-drivers{
+.title-drivers {
   font-weight: 600;
   font-size: 25px;
 }
 
-.text-drivers{
+.text-drivers {
   font-size: 20px;
 }
 
-/* 
-.driver-header {
+
+/* Estilização dos cards */
+.header-div-driver {
   display: flex;
   justify-content: space-between;
-  align-items: center;
   cursor: pointer;
 }
 
-.driver-content {
-  margin-top: 1rem;
+.expand-icon {
+  font-size: 20px;
+  transition: 0.3s;
+}
+
+.expand-icon.rotate {
+  transform: rotate(180deg);
+}
+
+.models-container {
   display: none;
 }
 
-.drivers.active .driver-content {
+.models-container.active {
   display: block;
 }
-
-.drivers.active .arrow {
-  transform: rotate(180deg);
-  transition: 0.3s;
-} */
-
-
-
