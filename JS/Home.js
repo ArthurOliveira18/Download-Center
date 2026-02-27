@@ -17,7 +17,8 @@ const drivers = [
     {
         marca: "Elgin",
         modelos: ["Elgin i9", "Elgin i8", "Elgin i7"]
-    }
+    },
+
 ];
 
 
@@ -123,4 +124,26 @@ drivers.forEach(driver => {
     });
 
     options_driver.appendChild(driversDiv)
+})
+
+
+const searchInput = document.getElementById("search-driver")
+
+searchInput.addEventListener("input", function () {
+
+    const valueInput = searchInput.value.toLowerCase()
+
+    const cards = document.querySelectorAll(".drivers-div")
+
+    cards.forEach(card => {
+
+        const cardValue = card.querySelector(".title-drivers").textContent.toLowerCase()
+
+        if (cardValue.includes(valueInput)) {
+            card.classList.remove("hidden")
+        } else {
+            card.classList.add("hidden")
+        }
+
+    });
 })

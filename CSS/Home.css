@@ -208,3 +208,16 @@ main {
   color: #fff;
   cursor: pointer;
 }
+
+
+.drivers-div {
+    transition: all 0.3s ease, opacity 0.3s ease;
+}
+
+.drivers-div.hidden {
+    opacity: 0;
+    transform: translateY(-10px);
+    pointer-events: none;
+    /* remove do layout */
+    display: none;
+}
