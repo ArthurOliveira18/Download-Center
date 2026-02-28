@@ -4,45 +4,39 @@ const drivers = [
     {
         marca: "Daruma",
         modelos: [
-            { nome: "DR800", link: "../driversDownloads/DARUMA_DR800_Driver_USB.zip" },
-            { nome: "DR700", link: "../driversDownloads/Driver-Daruma-DR700.zip" }
+            { nome: "DR800", link: "driversDownloads/DARUMA_DR800_Driver_USB.zip" },
+            { nome: "DR700", link: "driversDownloads/Driver-Daruma-DR700.zip" }
         ]
     },
     {
         marca: "Epson",
         modelos: [
-            { nome: "TM-T20", link: "../driversDownloads/driver-epson-tm-t20-tm-t20x.zip" },
-            { nome: "TM-T20X", link: "../driversDownloads/driver-epson-tm-t20-tm-t20x.zip" }
+            { nome: "TM-T20", link: "driversDownloads/driver-epson-tm-t20-tm-t20x.zip" },
+            { nome: "TM-T20X", link: "driversDownloads/driver-epson-tm-t20-tm-t20x.zip" }
         ]
     },
     {
         marca: "Bematech",
         modelos: [
-            { nome: "Bematech 4200 TH", link: "../driversDownloads/BEMA_MP_4200_TH_32.zip" },
-            { nome: "Bematech MP-2800 TH", link: "../driversDownloads/Bematech_MP-2800_TH_v1.3.zip" }
+            { nome: "Bematech 4200 TH", link: "driversDownloads/BEMA_MP_4200_TH_32.zip" },
+            { nome: "Bematech MP-2800 TH", link: "driversDownloads/Bematech_MP-2800_TH_v1.3.zip" }
         ]
     },
     {
         marca: "Elgin",
         modelos: [
-            { nome: "Elgin i9", link: "../driversDownloads/ELGIN_i9_e_i7_Driver_Spooler.zip" },
-            { nome: "Elgin i8", link: "../driversDownloads/imgCard_2a2228fd-72b1-4b99-8b66-8177650aaef5_i8_Windows Driver_V7.17.rar" },
-            { nome: "Elgin i7", link: "../driversDownloads/ELGIN_i9_e_i7_Driver_Spooler.zip" },
+            { nome: "Elgin i9", link: "driversDownloads/ELGIN_i9_e_i7_Driver_Spooler.zip" },
+            { nome: "Elgin i8", link: "driversDownloads/imgCard_2a2228fd-72b1-4b99-8b66-8177650aaef5_i8_Windows Driver_V7.17.rar" },
+            { nome: "Elgin i7", link: "driversDownloads/ELGIN_i9_e_i7_Driver_Spooler.zip" },
         ]
     },
     {
         marca: "Generico (POS-58/POS-80)",
         modelos: [
-            { nome: "POS-58", link: "../driversDownloads/POS_58_Driver-11.3.0.0.zip" },
-            { nome: "POS-80", link: "../driversDownloads/POS_58_Driver-11.3.0.0.zip" },
+            { nome: "POS-58", link: "driversDownloads/POS_58_Driver-11.3.0.0.zip" },
+            { nome: "POS-80", link: "driversDownloads/POS_58_Driver-11.3.0.0.zip" },
         ]
-    },
-    {
-        marca: "Driver balança - 2014",
-        modelos: [
-            { nome: "Balança Driver", link: "../driversDownloads/CH34x_Install_Windows_v3_4.zip" },
-        ]
-    },
+    }
 ];
 
 // ============================
