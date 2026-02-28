@@ -36,7 +36,13 @@ const drivers = [
             { nome: "POS-58", link: "../driversDownloads/POS_58_Driver-11.3.0.0.zip" },
             { nome: "POS-80", link: "../driversDownloads/POS_58_Driver-11.3.0.0.zip" },
         ]
-    }
+    },
+    {
+        marca: "Driver balança - 2014",
+        modelos: [
+            { nome: "Balança Driver", link: "../driversDownloads/CH34x_Install_Windows_v3_4.zip" },
+        ]
+    },
 ];
 
 // ============================
