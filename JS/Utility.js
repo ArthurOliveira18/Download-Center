@@ -4,13 +4,13 @@ const drivers = [
     {
         marca: "Bematech",
         modelos: [
-            { nome: "Bematech Utility", link: "../utilityDownloads/DARUMA DR800 Driver USB.zip" },
+            { nome: "Bematech Utility", link: "../utilityDownloads/Bematech-User-Software.zip" },
         ]
     }, 
     {
         marca: "Elgin",
         modelos: [
-            { nome: "Elgin Utility", link: "../utilityDownloads/DARUMA DR800 Driver USB.zip" },
+            { nome: "Elgin Utility", link: "../utilityDownloads/software-utility-elgin-i7-i8-i9.zip" },
         ]
     },
 
