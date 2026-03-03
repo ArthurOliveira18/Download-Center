@@ -110,6 +110,10 @@ drivers.forEach(driver => {
             window.open(modelsDrivers.link)
         })
 
+        buttonTutorial.addEventListener("click", function () {
+            window.open("./HTML/tutoriais.html", "_blank")  
+        })
+
 
         buttonsDriversDiv.appendChild(buttonDriverDownload)
         buttonsDriversDiv.appendChild(buttonTutorial)
