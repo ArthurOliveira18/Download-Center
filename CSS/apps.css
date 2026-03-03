@@ -1,0 +1,224 @@
+* {
+
+    margin: 0;
+    padding: 0;
+    font-family: system-ui
+}
+
+/* menu do topo */
+
+header {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  gap: 1rem;
+  background-color: #fff;
+  padding-bottom: 1rem;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+header hr {
+  width: 100%;
+  border: none;
+  height: 1px;
+  background-color: #3434342f;
+}
+
+body {
+  background-color: white;
+}
+
+
+/* Estilizando o Icon de download */
+.title-download-center .material-symbols-outlined {
+  font-size: 50px;
+  color: #c21b1b;
+}
+
+.downloadCenter {
+  width: 60%;
+}
+
+.title-download-center {
+  display: flex;
+  justify-content: baseline;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.optionsHome {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 2rem;
+}
+
+/* Animação dos headers */
+.options {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 10px 15px;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+/* Animação dos headers */
+.options:hover {
+  background-color: #ffffff;
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+  transform: translateY(-3px);
+  color: #c21b1b;
+}
+
+.search-drivers {
+  display: flex;
+  justify-content: center;
+  align-items: baseline;
+  flex-direction: column;
+  width: 60%;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  padding: 10px;
+}
+
+
+.input-search-drivers {
+  position: relative;
+  width: 50%;
+  display: flex;
+  align-items: center;
+  bottom: 20px;
+}
+
+.input-search-drivers input {
+  width: 100%;
+  padding: 0.75rem 0.75rem 0.75rem 2.5rem; 
+  border-radius: 0.5rem;
+  border: 1px solid #ddd; 
+  outline: none;
+}
+
+.search-icon {
+  position: absolute;
+  left: 15px; 
+  color: #888;
+  font-size: 20px; 
+  pointer-events: none; 
+}
+
+
+.options-drivers{
+  width: 60%;
+  display: flex;
+  flex-direction: column;
+  margin-top: 1rem;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2rem;
+}
+
+.drivers{
+  background-color: #d0ddf3;
+  width: 50%;
+  padding: 1rem;
+  border-radius: .75rem;
+  box-shadow: 0px 4px 6px #0000002b;
+}
+
+/*area dos downloads*/
+
+#apps {
+    margin: 20px;
+
+}
+
+
+.cards {
+    justify-content: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 30px;
+}
+
+.card {
+    border: 1px solid #00000039;
+    width: 300px;
+    border-radius: 15px;
+    padding: 20px;
+    background-color: white;
+    box-shadow: 0px 1px 17px rgba(121, 121, 121, 0.18);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+    transform: scale(1.05);
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.2);
+    border: 1px solid red;
+}
+
+.card h4 {
+    margin-bottom: 8px;
+    margin-top: 11px;
+    justify-content: center;
+    display: flex;
+    font-size: 1.1em;
+    padding-bottom: 10px;
+}
+
+.card img {
+    display: flex;
+    margin: auto;
+    padding: 10px;
+    border: 1px solid #00000039;
+    border-radius: 200%;
+}
+
+.info {
+    display: flex;
+    justify-content: space-between;
+}
+
+.download {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    margin-top: 15px;
+    width: 100%;
+    padding: 12px;
+    background-color: #ff0000;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-weight: bold;
+    cursor: pointer
+}
+
+/*animação do botão de download*/
+.download {
+    transition: all 0.3s ease;
+}
+
+.download:active {
+    transform: scale(0.95);
+}
+
+.download:hover {
+    background-color: #c62828;
+
+}
+
+/*animação do botão de download*/
+
+.material-symbols-outlined {
+    background-color: #ff000000;
+}
+
+
+a{
+  text-decoration: none;
+    color: inherit; /* Faz o link herdar a cor do texto ao redor */
+}

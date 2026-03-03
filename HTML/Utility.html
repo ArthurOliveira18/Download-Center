@@ -1,84 +1,83 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="stylesheet" href="../CSS/Utility.css" />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined"
-      rel="stylesheet"
-    />
 
-    <title>Download Center 2.0</title>
-  </head>
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="../CSS/Utility.css" />
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
 
-  <body>
-    <header>
-      <div class="downloadCenter">
-        <div class="title-download-center">
-          <span class="material-symbols-outlined"> download </span>
-          <h1>Download Center</h1>
-        </div>
+  <title>Download Center 2.0</title>
+</head>
 
-        <div>
-          <p>Baixe aplicativos, drivers, utilitários e acesse tutoriais</p>
-        </div>
-        <br />
-        <hr />
+<body>
+  <header>
+    <div class="downloadCenter">
+      <div class="title-download-center">
+        <span class="material-symbols-outlined"> download </span>
+        <h1>Download Center</h1>
       </div>
 
-      <div class="optionsHome">
-        <a href="../index.html">
-          <div class="options">
-            <span class="material-symbols-outlined"> download </span>
-            <p>Drivers</p>
-          </div>
-        </a>
+      <div>
+        <p>Baixe aplicativos, drivers, utilitários e acesse tutoriais</p>
+      </div>
+      <br />
+      <hr />
+    </div>
+    <!-- commit para alteração -->
 
-        <a href="./Utility.html">
-          <div class="options">
-            <span class="material-symbols-outlined"> build </span>
-            <p>Utilitários</p>
-          </div>
-        </a>
+    <div class="optionsHome">
+      <a href="../index.html">
+        <div class="options">
+          <span class="material-symbols-outlined"> download </span>
+          <p>Drivers</p>
+        </div>
+      </a>
 
+      <a href="./Utility.html">
+        <div class="options">
+          <span class="material-symbols-outlined"> build </span>
+          <p>Utilitários</p>
+        </div>
+      </a>
+
+      <a href="./apps.html">
         <div class="options">
           <span class="material-symbols-outlined"> inventory_2 </span>
           <p>Aplicativos da Empresa</p>
         </div>
+      </a>
 
+      <a href="./tutoriais.html">
         <div class="options">
           <span class="material-symbols-outlined"> menu_book </span>
           <p>Tutoriais</p>
         </div>
-      </div>
-    </header>
+    </div>
+    </a>
+  </header>
 
-    <main>
-      <!-- Buscar drivers -->
-      <div class="search-drivers">
-        <div>
-          <h1>Utilitários de impressoras</h1>
-          <p>
-            Baixe os utilitários para suas impressoras e acesse os tutoriais de
-            instalação
-          </p>
-        </div>
-
-        <div class="input-search-drivers">
-          <span class="material-symbols-outlined search-icon">search</span>
-          <input
-            type="text"
-            name="search-driver"
-            id="search-driver"
-            placeholder="Buscar driver ou marca da impressora"
-          />
-        </div>
+  <main>
+    <!-- Buscar drivers -->
+    <div class="search-drivers">
+      <div>
+        <h1>Utilitários de impressoras</h1>
+        <p>
+          Baixe os utilitários para suas impressoras e acesse os tutoriais de
+          instalação
+        </p>
       </div>
 
-      <div class="options-drivers" id="options-drivers"></div>
-    </main>
+      <div class="input-search-drivers">
+        <span class="material-symbols-outlined search-icon">search</span>
+        <input type="text" name="search-driver" id="search-driver" placeholder="Buscar driver ou marca da impressora" />
+      </div>
+    </div>
 
-    <script src="../JS/Utility.js"></script>
-  </body>
+    <div class="options-drivers" id="options-drivers"></div>
+  </main>
+
+  <script src="../JS/Utility.js"></script>
+</body>
+
 </html>

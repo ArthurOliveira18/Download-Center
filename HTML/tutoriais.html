@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Centro de Downloads - Tutoriais</title>
+    <link rel="stylesheet" href="/Download Center copy/css/tutoriais.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+
+</head>
+
+<body>
+    <header>
+        <div class="downloadCenter">
+            <div class="title-download-center">
+                <span class="material-symbols-outlined"> download </span>
+                <h1>Download Center</h1>
+            </div>
+
+            <div>
+                <p>Baixe aplicativos, drivers, utilitários e acesse tutoriais</p>
+            </div>
+            <br />
+            <hr />
+        </div>
+        <!-- commit para alteração -->
+
+        <div class="optionsHome">
+            <a href="../index.html">
+                <div class="options">
+                    <span class="material-symbols-outlined"> download </span>
+                    <p>Drivers</p>
+                </div>
+            </a>
+
+            <a href="./Utility.html">
+                <div class="options">
+                    <span class="material-symbols-outlined"> build </span>
+                    <p>Utilitários</p>
+                </div>
+            </a>
+
+            <a href="./apps.html">
+                <div class="options">
+                    <span class="material-symbols-outlined"> inventory_2 </span>
+                    <p>Aplicativos da Empresa</p>
+                </div>
+            </a>
+
+            <a href="./tutoriais.html">
+                <div class="options">
+                    <span class="material-symbols-outlined"> menu_book </span>
+                    <p>Tutoriais</p>
+                </div>
+        </div>
+        </a>
+    </header>
+
+
+    <main>
+
+        <!-- Buscar drivers -->
+        <div class="search-drivers">
+            <div id="apps">
+                <h1>Lista de Tutoriais</h1>
+                <p>Tutoriais para instalações e configurações</p>
+            </div>
+
+            <div class="input-search-drivers">
+                <span class="material-symbols-outlined search-icon">search</span>
+                <input type="text" name="search-driver" id="search-driver" placeholder="Buscar tutoriais" />
+            </div>
+        </div>
+
+
+        <div class="options-drivers" id="options-drivers">
+
+
+        </div>
+
+    </main>
+
+    <main class="container">
+
+        <div class="layout-grid">
+            <aside class="sidebar">
+                <div class="sidebar-header">
+                    <i class="fa-solid fa-book-open"></i> Lista de Tutoriais
+                </div>
+
+                <div class="menu-group">
+                    <span class="group-label">Drivers</span>
+                    <button class="tutorial-btn" data-id="daruma800">
+                        Instalação Driver Daruma DR800 <i class="fa-solid fa-chevron-right"></i>
+                    </button>
+                    <button class="tutorial-btn" data-id="daruma700">
+                        Instalação Driver Daruma DR700 <i class="fa-solid fa-chevron-right"></i>
+                    </button>
+                    <button class="tutorial-btn" data-id="bematech4200">
+                        Instalação Driver Bematech MP 4200 TH <i class="fa-solid fa-chevron-right"></i>
+                    </button>
+                </div>
+
+                <div class="menu-group">
+                    <span class="group-label">Utilitários</span>
+                    <button class="tutorial-btn" data-id="framework">
+                        Instalação Daruma Framework <i class="fa-solid fa-chevron-right"></i>
+                    </button>
+                </div>
+            </aside>
+
+            <section class="content-viewer" id="viewer">
+                <div class="empty-state">
+                    <i class="fa-solid fa-book-open"></i>
+                    <p>Selecione um tutorial para começar</p>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <p>&copy; 2026 Centro de Downloads. Todos os direitos reservados.</p>
+    </footer>
+
+    <script src="/Download Center copy/js/teste.js"></script>
+</body>
+
+</html>
