@@ -218,12 +218,11 @@ main {
     opacity: 0;
     transform: translateY(-10px);
     pointer-events: none;
-    /* remove do layout */
     display: none;
 }
 
 a{
   text-decoration: none;
-    color: inherit; /* Faz o link herdar a cor do texto ao redor */
+    color: inherit; 
 }
 

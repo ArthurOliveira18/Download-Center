@@ -82,49 +82,55 @@
 
     </main>
 
-    <main class="container">
+<main class="recipiente-principal">
+    <div class="grade-layout">
+        <aside class="barra-lateral">
+            <div class="cabecalho-lateral">
+                <i class="fa-solid fa-book-open"></i> Lista de Tutoriais
+            </div>
 
-        <div class="layout-grid">
-            <aside class="sidebar">
-                <div class="sidebar-header">
-                    <i class="fa-solid fa-book-open"></i> Lista de Tutoriais
-                </div>
+            <div class="grupo-menu">
+                <span class="rotulo-grupo">Configurações</span>
+                <button class="botao-tutorial" data-id="configuracaoBalanca">
+                    Configuração de Balança <i class="fa-solid fa-chevron-right"></i>
+                </button>
+            </div>
 
-                <div class="menu-group">
-                    <span class="group-label">Drivers</span>
-                    <button class="tutorial-btn" data-id="daruma800">
-                        Instalação Driver Daruma DR800 <i class="fa-solid fa-chevron-right"></i>
-                    </button>
-                    <button class="tutorial-btn" data-id="daruma700">
-                        Instalação Driver Daruma DR700 <i class="fa-solid fa-chevron-right"></i>
-                    </button>
-                    <button class="tutorial-btn" data-id="bematech4200">
-                        Instalação Driver Bematech MP 4200 TH <i class="fa-solid fa-chevron-right"></i>
-                    </button>
-                </div>
+            <div class="grupo-menu">
+                <span class="rotulo-grupo">Drivers</span>
+                <button class="botao-tutorial" data-id="daruma800">
+                    Instalação Driver Daruma DR800 <i class="fa-solid fa-chevron-right"></i>
+                </button>
+                <button class="botao-tutorial" data-id="daruma700">
+                    Instalação Driver Daruma DR700 <i class="fa-solid fa-chevron-right"></i>
+                </button>
+                <button class="botao-tutorial" data-id="bematech4200">
+                    Instalação Driver Bematech MP 4200 TH <i class="fa-solid fa-chevron-right"></i>
+                </button>
+            </div>
 
-                <div class="menu-group">
-                    <span class="group-label">Utilitários</span>
-                    <button class="tutorial-btn" data-id="framework">
-                        Instalação Daruma Framework <i class="fa-solid fa-chevron-right"></i>
-                    </button>
-                </div>
-            </aside>
+            <div class="grupo-menu">
+                <span class="rotulo-grupo">Utilitários</span>
+                <button class="botao-tutorial" data-id="framework">
+                    Instalação Daruma Framework <i class="fa-solid fa-chevron-right"></i>
+                </button>
+            </div>
+        </aside>
 
-            <section class="content-viewer" id="viewer">
-                <div class="empty-state">
-                    <i class="fa-solid fa-book-open"></i>
-                    <p>Selecione um tutorial para começar</p>
-                </div>
-            </section>
-        </div>
-    </main>
+        <section class="visualizador-conteudo" id="visualizador">
+            <div class="estado-vazio">
+                <i class="fa-solid fa-book-open"></i>
+                <p>Selecione um tutorial para começar</p>
+            </div>
+        </section>
+    </div>
+</main>
 
     <footer class="footer">
         <p>&copy; 2026 Centro de Downloads. Todos os direitos reservados.</p>
     </footer>
 
-    <script src="/Download Center copy/js/teste.js"></script>
+    <script src="/Download-Center/JS/tutoriais.js"></script>
 </body>
 
 </html>
