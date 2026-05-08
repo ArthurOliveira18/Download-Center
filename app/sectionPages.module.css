@@ -1,0 +1,141 @@
+.page {
+  width: min(1180px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 34px 0 56px;
+  display: grid;
+  gap: 28px;
+}
+
+.hero {
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: clamp(22px, 4vw, 38px);
+  display: grid;
+  gap: 12px;
+  background: white;
+  box-shadow: var(--shadow-sm);
+}
+
+.hero span {
+  color: var(--color-brand);
+  font-size: 0.78rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.hero h1 {
+  color: var(--color-text);
+  font-size: clamp(2rem, 5vw, 3.4rem);
+  line-height: 1;
+}
+
+.hero p {
+  max-width: 760px;
+  color: var(--color-muted);
+  font-size: 1.03rem;
+  line-height: 1.6;
+}
+
+.surface {
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: clamp(18px, 4vw, 28px);
+  background: white;
+  box-shadow: var(--shadow-sm);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.stack {
+  display: grid;
+  gap: 16px;
+}
+
+.guideDetail {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  align-items: start;
+  gap: 20px;
+}
+
+.steps {
+  counter-reset: step;
+  display: grid;
+  gap: 12px;
+  list-style: none;
+}
+
+.steps li {
+  counter-increment: step;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 16px;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 12px;
+  color: var(--color-muted);
+  background: white;
+}
+
+.steps li::before {
+  content: counter(step);
+  width: 30px;
+  height: 30px;
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  color: white;
+  background: var(--color-brand);
+  font-weight: 900;
+}
+
+.aside {
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 18px;
+  display: grid;
+  gap: 12px;
+  background: white;
+  box-shadow: var(--shadow-sm);
+}
+
+.aside h2 {
+  color: var(--color-text);
+  font-size: 1.1rem;
+}
+
+.aside p {
+  color: var(--color-muted);
+  line-height: 1.5;
+}
+
+.download {
+  min-height: 42px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: white;
+  background: var(--color-brand);
+  font-weight: 850;
+  text-decoration: none;
+}
+
+@media (max-width: 860px) {
+  .guideDetail,
+  .grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 680px) {
+  .page {
+    width: min(100% - 24px, 1180px);
+    padding-top: 24px;
+  }
+}

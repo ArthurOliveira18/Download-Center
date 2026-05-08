@@ -1,0 +1,343 @@
+.page {
+  width: min(1180px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 34px 0 56px;
+  display: grid;
+  gap: 22px;
+}
+
+.hero,
+.panel,
+.loginCard {
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  background: white;
+  box-shadow: var(--shadow-sm);
+}
+
+.hero {
+  padding: clamp(22px, 4vw, 36px);
+  display: grid;
+  gap: 14px;
+}
+
+.heroTop,
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.eyebrow {
+  color: var(--color-brand);
+  font-size: 0.78rem;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.hero h1 {
+  color: var(--color-text);
+  font-size: clamp(2rem, 5vw, 3.3rem);
+  line-height: 1;
+}
+
+.hero p {
+  max-width: 780px;
+  color: var(--color-muted);
+  line-height: 1.6;
+}
+
+.logout {
+  min-height: 42px;
+  border: 1px solid var(--color-border-strong);
+  border-radius: 8px;
+  padding: 0 14px;
+  color: var(--color-text);
+  background: white;
+  font-weight: 850;
+  cursor: pointer;
+}
+
+.notice,
+.error {
+  border-radius: 8px;
+  padding: 13px 14px;
+  font-weight: 750;
+}
+
+.notice {
+  color: var(--color-success);
+  background: #ecfdf3;
+}
+
+.error {
+  color: var(--color-brand-strong);
+  background: var(--color-brand-soft);
+}
+
+.panel {
+  padding: clamp(18px, 4vw, 28px);
+  display: grid;
+  gap: 24px;
+}
+
+.panel h2 {
+  color: var(--color-text);
+  font-size: 1.45rem;
+}
+
+.formGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.field,
+.wideField,
+.checkField {
+  display: grid;
+  gap: 7px;
+}
+
+.wideField {
+  grid-column: 1 / -1;
+}
+
+.field span,
+.wideField span {
+  color: var(--color-muted);
+  font-size: 0.78rem;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.field input,
+.field select,
+.wideField input,
+.wideField textarea,
+.fileInput {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 0 12px;
+  color: var(--color-text);
+  background: white;
+  outline: none;
+}
+
+.wideField textarea {
+  min-height: 98px;
+  padding: 12px;
+  resize: vertical;
+}
+
+.field input:focus,
+.field select:focus,
+.wideField input:focus,
+.wideField textarea:focus,
+.fileInput:focus {
+  border-color: rgba(194, 27, 27, 0.52);
+  box-shadow: 0 0 0 4px rgba(194, 27, 27, 0.1);
+}
+
+.checkField {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--color-muted);
+  font-weight: 750;
+}
+
+.checkField input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--color-brand);
+}
+
+.submit {
+  width: fit-content;
+  min-height: 46px;
+  border: 0;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 18px;
+  color: white;
+  background: var(--color-brand);
+  box-shadow: 0 14px 28px rgba(194, 27, 27, 0.22);
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.submit:hover {
+  background: var(--color-brand-strong);
+}
+
+.loginPage {
+  min-height: calc(100vh - 150px);
+  width: min(520px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 52px 0;
+  display: grid;
+  place-items: center;
+}
+
+.loginCard {
+  width: 100%;
+  padding: clamp(22px, 5vw, 34px);
+  display: grid;
+  gap: 18px;
+}
+
+.loginCard h1 {
+  color: var(--color-text);
+  font-size: clamp(1.7rem, 4vw, 2.5rem);
+  line-height: 1;
+}
+
+.loginCard p {
+  color: var(--color-muted);
+  line-height: 1.55;
+}
+
+.loginForm {
+  display: grid;
+  gap: 14px;
+}
+
+.securityList {
+  border-top: 1px solid var(--color-border);
+  padding-top: 16px;
+  display: grid;
+  gap: 8px;
+  color: var(--color-muted);
+  font-size: 0.92rem;
+  list-style: none;
+}
+
+.securityList li::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 8px;
+  background: var(--color-brand);
+}
+
+.sectionNote {
+  color: var(--color-muted);
+  line-height: 1.55;
+}
+
+.managementGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.editableCard,
+.lockedList article {
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 16px;
+  display: grid;
+  gap: 12px;
+  background: var(--color-surface);
+}
+
+.editableCard h3,
+.lockedList h3 {
+  color: var(--color-text);
+  font-size: 1.05rem;
+}
+
+.editableCard small,
+.lockedList small {
+  color: var(--color-muted);
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.editableCard label {
+  display: grid;
+  gap: 7px;
+  color: var(--color-muted);
+  font-size: 0.78rem;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.editableCard input,
+.editableCard textarea,
+.editableCard select {
+  width: 100%;
+  min-height: 42px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 0 12px;
+  color: var(--color-text);
+  background: white;
+  outline: none;
+  text-transform: none;
+}
+
+.editableCard textarea {
+  min-height: 86px;
+  padding: 12px;
+  resize: vertical;
+}
+
+.lockedList {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.lockedList p {
+  color: var(--color-muted);
+  line-height: 1.5;
+}
+
+.miniActions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.danger {
+  min-height: 40px;
+  border: 1px solid rgba(194, 27, 27, 0.32);
+  border-radius: 8px;
+  padding: 0 14px;
+  color: var(--color-brand-strong);
+  background: var(--color-brand-soft);
+  font-weight: 850;
+  cursor: pointer;
+}
+
+@media (max-width: 760px) {
+  .page {
+    width: min(100% - 24px, 1180px);
+    padding-top: 24px;
+  }
+
+  .heroTop,
+  .toolbar {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .formGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .managementGrid,
+  .lockedList {
+    grid-template-columns: 1fr;
+  }
+}

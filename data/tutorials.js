@@ -1,0 +1,118 @@
+export const tutorials = [
+  {
+    id: "configurar-impressora-usb",
+    titulo: "Como configurar impressora USB",
+    categoria: "USB",
+    descricao: "Tutorial geral para instalar, reconhecer e testar impressoras conectadas via USB.",
+    keywords: ["usb", "impressora", "driver", "porta", "windows", "instalacao"],
+    observacoes: [
+      "Use portas USB diretas do computador sempre que possivel.",
+      "Evite trocar a porta fisica depois que a impressora estiver configurada."
+    ],
+    errosComuns: [
+      {
+        problema: "Windows nao reconhece a impressora",
+        solucao: "Troque o cabo, use outra porta USB e reinstale o driver como administrador."
+      },
+      {
+        problema: "Pagina de teste nao sai",
+        solucao: "Revise a porta USB001/USB002 selecionada nas propriedades da impressora."
+      }
+    ],
+    passos: [
+      "Baixe o driver correto para o modelo da impressora.",
+      "Execute o instalador como administrador.",
+      "Conecte a impressora via USB quando o instalador solicitar.",
+      "Abra Dispositivos e Impressoras no Windows.",
+      "Envie uma pagina de teste."
+    ]
+  },
+  {
+    id: "configurar-impressora-rede",
+    titulo: "Como configurar impressora em rede",
+    categoria: "Rede",
+    descricao: "Tutorial tecnico para entender IP, faixa de rede, gateway, ncpa.cpl, IPv4, ping e porta TCP/IP.",
+    keywords: ["rede", "ethernet", "ip", "gateway", "ipv4", "ping", "impressora", "porta", "tcp"],
+    observacoes: [
+      "Computador e impressora precisam estar na mesma faixa de rede ou possuir rota entre redes.",
+      "Sempre documente o IP final usado pela impressora."
+    ],
+    errosComuns: [
+      {
+        problema: "Ping nao responde",
+        solucao: "Confirme IP, cabo de rede, gateway, mascara e se a impressora esta ligada."
+      },
+      {
+        problema: "Impressora muda de IP",
+        solucao: "Configure IP fixo na impressora ou reserva DHCP no roteador."
+      }
+    ],
+    passos: [
+      "Entenda a faixa de rede: se o computador usa 192.168.0.20, normalmente a impressora deve usar 192.168.0.x.",
+      "Pressione Windows + R.",
+      "Digite ncpa.cpl e pressione Enter.",
+      "Abra as propriedades da placa de rede ativa.",
+      "Abra Protocolo IP Versao 4 (TCP/IPv4).",
+      "Confira IP, mascara e gateway do computador.",
+      "Configure a impressora com IP compativel com a mesma faixa.",
+      "Abra o Prompt de Comando e execute ping IP_DA_IMPRESSORA.",
+      "No Windows, crie uma porta TCP/IP apontando para o IP da impressora.",
+      "Envie uma pagina de teste."
+    ]
+  },
+  {
+    id: "localizar-ip-impressora",
+    titulo: "Como localizar IP da impressora",
+    categoria: "Rede",
+    descricao: "Procedimento geral para descobrir o IP atual de uma impressora Ethernet.",
+    keywords: ["ip", "rede", "ethernet", "impressora", "gateway", "diagnostico"],
+    observacoes: [
+      "Alguns modelos imprimem o IP ao segurar o botao feed durante a inicializacao.",
+      "O metodo varia conforme fabricante e interface de rede."
+    ],
+    errosComuns: [
+      {
+        problema: "IP impresso nao abre",
+        solucao: "Verifique se computador e impressora estao na mesma rede e teste ping."
+      }
+    ],
+    passos: [
+      "Confirme que o cabo de rede esta conectado e com luz ativa.",
+      "Imprima a configuracao de rede pelo procedimento do fabricante.",
+      "Anote o IP, mascara e gateway exibidos.",
+      "No computador, abra o Prompt de Comando.",
+      "Execute ping IP_DA_IMPRESSORA.",
+      "Se responder, use esse IP na porta TCP/IP do Windows."
+    ]
+  },
+  {
+    id: "erros-comuns-impressora",
+    titulo: "Como resolver erros comuns de impressora",
+    categoria: "Erros comuns de impressora",
+    descricao: "Checklist de diagnostico para fila presa, impressora offline, porta incorreta e falha de driver.",
+    keywords: ["erro", "offline", "fila", "spooler", "porta", "driver", "impressora"],
+    observacoes: [
+      "Antes de reinstalar, valide energia, cabo, porta e fila de impressao.",
+      "Mantenha registro do modelo, driver e porta que funcionaram."
+    ],
+    errosComuns: [
+      {
+        problema: "Fila de impressao travada",
+        solucao: "Limpe a fila e reinicie o servico de spooler do Windows."
+      },
+      {
+        problema: "Caracteres estranhos",
+        solucao: "Revise driver, encoding, pagina de codigo e largura do papel."
+      }
+    ],
+    passos: [
+      "Confira se a impressora esta ligada e com papel.",
+      "Verifique se ha luz de erro no equipamento.",
+      "Limpe a fila de impressao.",
+      "Reinicie o spooler do Windows.",
+      "Confirme se a porta correta esta selecionada.",
+      "Envie uma pagina de teste.",
+      "Se persistir, reinstale o driver correto."
+    ]
+  }
+];

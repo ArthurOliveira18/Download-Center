@@ -36,7 +36,14 @@ const drivers = [
             { nome: "POS-58", link: "./driversDownloads/POS_58_Driver-11.3.0.0.zip" },
             { nome: "POS-80", link: "./driversDownloads/POS_58_Driver-11.3.0.0.zip" },
         ]
-    }
+    },
+    {
+        marca: "App Tech",
+        modelos: [
+            { nome: "App tech", link: "./driversDownloads/ELGIN_i9_e_i7_Driver_Spooler.zip" },
+            
+        ]
+    },
 ];
 
 // ============================

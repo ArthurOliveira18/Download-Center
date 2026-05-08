@@ -1,0 +1,22 @@
+.empty {
+  min-height: 220px;
+  border: 1px dashed var(--color-border-strong);
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 12px;
+  padding: 28px;
+  color: var(--color-muted);
+  background: white;
+  text-align: center;
+}
+
+.empty h3 {
+  color: var(--color-text);
+  font-size: 1.05rem;
+}
+
+.empty p {
+  max-width: 480px;
+}
