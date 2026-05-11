@@ -6,7 +6,7 @@
   grid-template-columns: auto 1fr auto;
   align-items: center;
   gap: 16px;
-  background: white;
+  background: var(--color-card);
   box-shadow: var(--shadow-sm);
 }
 

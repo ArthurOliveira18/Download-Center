@@ -10,7 +10,7 @@
   border-radius: 8px;
   padding: 0 48px;
   color: var(--color-text);
-  background: white;
+  background: var(--color-field);
   box-shadow: 0 14px 40px rgba(25, 25, 25, 0.06);
   font-size: 1rem;
   outline: none;

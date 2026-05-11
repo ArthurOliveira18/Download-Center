@@ -17,7 +17,7 @@
   gap: 34px;
   overflow: hidden;
   background:
-    linear-gradient(135deg, rgba(255, 240, 240, 0.92), rgba(255, 255, 255, 0.9) 42%),
+    linear-gradient(135deg, var(--color-hero-soft), var(--color-hero-plain) 42%),
     repeating-linear-gradient(90deg, rgba(194, 27, 27, 0.06) 0 1px, transparent 1px 82px);
 }
 
@@ -31,7 +31,7 @@
   border-radius: 999px;
   padding: 8px 12px;
   color: var(--color-brand-strong);
-  background: white;
+  background: var(--color-card);
   font-size: 0.78rem;
   font-weight: 900;
   text-transform: uppercase;
@@ -76,7 +76,7 @@
 .heroActions a + a {
   border: 1px solid var(--color-border-strong);
   color: var(--color-text);
-  background: white;
+  background: var(--color-card);
   box-shadow: none;
 }
 
@@ -86,7 +86,7 @@
   padding: 20px;
   display: grid;
   gap: 18px;
-  background: rgba(255, 255, 255, 0.86);
+  background: var(--color-card-translucent);
   box-shadow: var(--shadow-lg);
 }
 
@@ -125,7 +125,7 @@
   display: flex;
   justify-content: space-between;
   gap: 12px;
-  background: white;
+  background: var(--color-card);
 }
 
 .panelRows span {
@@ -141,7 +141,7 @@
   border: 1px solid var(--color-border);
   border-radius: 8px;
   padding: clamp(18px, 4vw, 28px);
-  background: white;
+  background: var(--color-card);
   box-shadow: var(--shadow-sm);
 }
 
@@ -160,7 +160,7 @@
   align-items: center;
   gap: 14px;
   color: var(--color-text);
-  background: white;
+  background: var(--color-card);
   text-decoration: none;
   box-shadow: var(--shadow-sm);
   transition: border 180ms ease, transform 180ms ease, box-shadow 180ms ease;

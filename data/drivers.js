@@ -565,5 +565,49 @@ export const drivers = [
         "Finalize com uma impressao de teste."
       ]
     }
+  },
+  {
+    "id": "teste-aaa",
+    "marca": "teste",
+    "modelo": "aaa",
+    "categoria": "Impressora termica",
+    "descricao": "aa",
+    "compatibilidade": [
+      "win1"
+    ],
+    "keywords": [
+      "4200",
+      "teste",
+      "aaa",
+      "impressora",
+      "termica",
+      "tese",
+      "driver"
+    ],
+    "destaque": false,
+    "driver": {
+      "nome": "tese",
+      "versao": "aa",
+      "localPath": "C:/Users/supor/Desktop/Download Center/Download-Center/public/drivers/teste/aaa-aa.zip",
+      "downloadUrl": "/drivers/teste/aaa-aa.zip",
+      "versoes": [
+        {
+          "nome": "aa",
+          "downloadUrl": "/drivers/teste/aaa-aa.zip",
+          "localPath": "C:/Users/supor/Desktop/Download Center/Download-Center/public/drivers/teste/aaa-aa.zip"
+        }
+      ]
+    },
+    "guiaInstalacao": {
+      "titulo": "Como instalar teste aaa",
+      "url": "/guias/teste/aaa",
+      "passos": [
+        "Baixe o driver cadastrado no Download Center.",
+        "Extraia o arquivo, quando aplicavel.",
+        "Execute o instalador como administrador.",
+        "Configure a porta USB, serial ou rede.",
+        "Finalize com uma impressao de teste."
+      ]
+    }
   }
 ];

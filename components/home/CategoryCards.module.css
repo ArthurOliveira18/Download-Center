@@ -33,7 +33,7 @@
   display: grid;
   gap: 10px;
   color: var(--color-brand);
-  background: white;
+  background: var(--color-card);
   box-shadow: var(--shadow-sm);
 }
 

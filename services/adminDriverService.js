@@ -16,7 +16,7 @@ export async function createDriverFromForm(formData) {
   const descricao = getRequiredText(formData, "descricao", "Informe a descricao do driver.");
   const compatibilidade = getList(formData, "compatibilidade");
   const keywords = getList(formData, "keywords");
-  const guiaTitulo = getOptionalText(formData, "guiaTitulo") || `Como instalar ${marca} ${modelo}`;
+  const guiaTitulo = getOptionalText(formData, "guiaTitulo") || `Como instalar ${marca.value} ${modelo.value}`;
   const destaque = formData.get("destaque") === "on";
 
   const validationError =
@@ -122,14 +122,16 @@ export async function updateDriverEditableFieldsFromForm(formData) {
 
   const driverName = getRequiredText(formData, "driverName", "Informe o nome do driver.");
   const categoria = getRequiredText(formData, "categoria", "Informe a categoria.");
+  const versao = getRequiredText(formData, "versao", "Informe a versao do driver.");
   const descricao = getRequiredText(formData, "descricao", "Informe a descricao.");
 
-  const validationError = driverName.error || categoria.error || descricao.error;
+  const validationError = driverName.error || categoria.error || versao.error || descricao.error;
 
   if (validationError) {
     return { ok: false, error: validationError };
   }
 
+  const metadados = getOptionalText(formData, "metadados");
   const nextDrivers = drivers.map((driver, index) => {
     if (index !== driverIndex) {
       return driver;
@@ -140,10 +142,21 @@ export async function updateDriverEditableFieldsFromForm(formData) {
       categoria: categoria.value,
       descricao: descricao.value,
       compatibilidade: getList(formData, "compatibilidade"),
-      keywords: uniqueValues(getList(formData, "keywords")),
+      observacoes: getList(formData, "observacoes"),
+      metadados,
+      keywords: uniqueValues([
+        ...(driver.keywords || []),
+        ...getList(formData, "metadados"),
+        ...tokenize(`${driver.marca} ${driver.modelo} ${categoria.value} ${driverName.value} ${versao.value}`)
+      ]),
       driver: {
         ...driver.driver,
-        nome: driverName.value
+        nome: driverName.value,
+        versao: versao.value,
+        versoes: (driver.driver?.versoes || []).map((item, versionIndex) => ({
+          ...item,
+          nome: versionIndex === 0 ? versao.value : item.nome
+        }))
       }
     };
   });

@@ -5,7 +5,7 @@
   display: grid;
   grid-template-columns: auto 1fr;
   gap: 14px;
-  background: white;
+  background: var(--color-card);
   box-shadow: var(--shadow-sm);
 }
 

@@ -29,8 +29,7 @@ export default async function AdminLoginPage({ searchParams }) {
         <span className={styles.eyebrow}>Login interno</span>
         <h1>Acesso de funcionarios</h1>
         <p>
-          Entre para cadastrar novos drivers, enviar arquivos e manter a central de downloads
-          organizada.
+          Entre para organizar drivers, aplicativos internos, guias e tutoriais com seguranca.
         </p>
 
         {params?.logout ? <div className={styles.notice}>Sessao encerrada.</div> : null}

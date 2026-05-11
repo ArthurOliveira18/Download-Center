@@ -4,6 +4,10 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getCurrentAdmin, signOutAdmin } from "@/lib/auth/server";
 import {
+  createInternalAppFromForm,
+  updateInternalAppEditableFieldsFromForm
+} from "@/services/adminAppService";
+import {
   createDriverFromForm,
   updateDriverEditableFieldsFromForm
 } from "@/services/adminDriverService";
@@ -19,16 +23,12 @@ import {
 } from "@/services/adminTutorialService";
 
 export async function createDriverAction(formData) {
-  const admin = await getCurrentAdmin();
-
-  if (!admin) {
-    redirect("/admin/login");
-  }
+  await requireAdmin();
 
   const result = await createDriverFromForm(formData);
 
   if (!result.ok) {
-    redirect(`/admin?error=${encodeURIComponent(result.error)}`);
+    redirect(`/admin?area=drivers&action=create&error=${encodeURIComponent(result.error)}`);
   }
 
   revalidatePath("/");
@@ -36,7 +36,7 @@ export async function createDriverAction(formData) {
   revalidatePath("/guias");
   revalidatePath(result.driver.guiaInstalacao.url);
 
-  redirect(`/admin?created=${encodeURIComponent(result.driver.id)}`);
+  redirect(`/admin?area=drivers&action=edit&item=${encodeURIComponent(result.driver.id)}&created=${encodeURIComponent(result.driver.id)}`);
 }
 
 export async function updateDriverAction(formData) {
@@ -45,7 +45,7 @@ export async function updateDriverAction(formData) {
   const result = await updateDriverEditableFieldsFromForm(formData);
 
   if (!result.ok) {
-    redirect(`/admin?error=${encodeURIComponent(result.error)}`);
+    redirect(`/admin?area=drivers&action=edit&error=${encodeURIComponent(result.error)}`);
   }
 
   revalidatePath("/");
@@ -53,7 +53,37 @@ export async function updateDriverAction(formData) {
   revalidatePath("/guias");
   revalidatePath(result.driver.guiaInstalacao?.url || "/guias");
 
-  redirect(`/admin?updated=${encodeURIComponent(result.driver.id)}`);
+  redirect(`/admin?area=drivers&action=edit&item=${encodeURIComponent(result.driver.id)}&updated=${encodeURIComponent(result.driver.id)}`);
+}
+
+export async function createInternalAppAction(formData) {
+  await requireAdmin();
+
+  const result = await createInternalAppFromForm(formData);
+
+  if (!result.ok) {
+    redirect(`/admin?area=apps&action=create&error=${encodeURIComponent(result.error)}`);
+  }
+
+  revalidatePath("/");
+  revalidatePath("/apps");
+
+  redirect(`/admin?area=apps&action=edit&item=${encodeURIComponent(result.app.id)}&appCreated=${encodeURIComponent(result.app.id)}`);
+}
+
+export async function updateInternalAppAction(formData) {
+  await requireAdmin();
+
+  const result = await updateInternalAppEditableFieldsFromForm(formData);
+
+  if (!result.ok) {
+    redirect(`/admin?area=apps&action=edit&error=${encodeURIComponent(result.error)}`);
+  }
+
+  revalidatePath("/");
+  revalidatePath("/apps");
+
+  redirect(`/admin?area=apps&action=edit&item=${encodeURIComponent(result.app.id)}&appUpdated=${encodeURIComponent(result.app.id)}`);
 }
 
 export async function createGuideAction(formData) {
@@ -62,13 +92,13 @@ export async function createGuideAction(formData) {
   const result = await createGuideFromForm(formData);
 
   if (!result.ok) {
-    redirect(`/admin?error=${encodeURIComponent(result.error)}`);
+    redirect(`/admin?area=guides&action=create&error=${encodeURIComponent(result.error)}`);
   }
 
   revalidatePath("/guias");
   revalidatePath(result.guide ? `/guias/${result.guide.marca}/${result.guide.modelo}` : "/guias");
 
-  redirect(`/admin?guideCreated=${encodeURIComponent(result.guide.id)}`);
+  redirect(`/admin?area=guides&action=edit&item=${encodeURIComponent(result.guide.id)}&guideCreated=${encodeURIComponent(result.guide.id)}`);
 }
 
 export async function updateGuideAction(formData) {
@@ -77,11 +107,11 @@ export async function updateGuideAction(formData) {
   const result = await updateGuideFromForm(formData);
 
   if (!result.ok) {
-    redirect(`/admin?error=${encodeURIComponent(result.error)}`);
+    redirect(`/admin?area=guides&action=edit&error=${encodeURIComponent(result.error)}`);
   }
 
   revalidatePath("/guias");
-  redirect(`/admin?guideUpdated=${encodeURIComponent(result.guide.id)}`);
+  redirect(`/admin?area=guides&action=edit&item=${encodeURIComponent(result.guide.id)}&guideUpdated=${encodeURIComponent(result.guide.id)}`);
 }
 
 export async function deleteGuideAction(formData) {
@@ -90,11 +120,11 @@ export async function deleteGuideAction(formData) {
   const result = await deleteGuideFromForm(formData);
 
   if (!result.ok) {
-    redirect(`/admin?error=${encodeURIComponent(result.error)}`);
+    redirect(`/admin?area=guides&action=delete&error=${encodeURIComponent(result.error)}`);
   }
 
   revalidatePath("/guias");
-  redirect(`/admin?guideDeleted=${encodeURIComponent(result.id)}`);
+  redirect(`/admin?area=guides&guideDeleted=${encodeURIComponent(result.id)}`);
 }
 
 export async function createTutorialAction(formData) {
@@ -103,12 +133,12 @@ export async function createTutorialAction(formData) {
   const result = await createTutorialFromForm(formData);
 
   if (!result.ok) {
-    redirect(`/admin?error=${encodeURIComponent(result.error)}`);
+    redirect(`/admin?area=tutorials&action=create&error=${encodeURIComponent(result.error)}`);
   }
 
   revalidatePath("/tutoriais");
   revalidatePath(`/tutoriais/${result.tutorial.id}`);
-  redirect(`/admin?tutorialCreated=${encodeURIComponent(result.tutorial.id)}`);
+  redirect(`/admin?area=tutorials&action=edit&item=${encodeURIComponent(result.tutorial.id)}&tutorialCreated=${encodeURIComponent(result.tutorial.id)}`);
 }
 
 export async function updateTutorialAction(formData) {
@@ -117,12 +147,12 @@ export async function updateTutorialAction(formData) {
   const result = await updateTutorialFromForm(formData);
 
   if (!result.ok) {
-    redirect(`/admin?error=${encodeURIComponent(result.error)}`);
+    redirect(`/admin?area=tutorials&action=edit&error=${encodeURIComponent(result.error)}`);
   }
 
   revalidatePath("/tutoriais");
   revalidatePath(`/tutoriais/${result.tutorial.id}`);
-  redirect(`/admin?tutorialUpdated=${encodeURIComponent(result.tutorial.id)}`);
+  redirect(`/admin?area=tutorials&action=edit&item=${encodeURIComponent(result.tutorial.id)}&tutorialUpdated=${encodeURIComponent(result.tutorial.id)}`);
 }
 
 export async function deleteTutorialAction(formData) {
@@ -131,11 +161,11 @@ export async function deleteTutorialAction(formData) {
   const result = await deleteTutorialFromForm(formData);
 
   if (!result.ok) {
-    redirect(`/admin?error=${encodeURIComponent(result.error)}`);
+    redirect(`/admin?area=tutorials&action=edit&error=${encodeURIComponent(result.error)}`);
   }
 
   revalidatePath("/tutoriais");
-  redirect(`/admin?tutorialDeleted=${encodeURIComponent(result.id)}`);
+  redirect(`/admin?area=tutorials&tutorialDeleted=${encodeURIComponent(result.id)}`);
 }
 
 export async function logoutAction() {

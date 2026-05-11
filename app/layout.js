@@ -18,8 +18,14 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="pt-BR">
+    <html lang="pt-BR" suppressHydrationWarning>
       <body>
+        <script
+          dangerouslySetInnerHTML={{
+            __html:
+              "try{var theme=localStorage.getItem('takeat-theme');if(theme==='dark'||theme==='light'){document.documentElement.dataset.theme=theme;}}catch(error){}"
+          }}
+        />
         <SiteHeader />
         <main>{children}</main>
         <SiteFooter />

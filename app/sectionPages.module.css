@@ -12,7 +12,7 @@
   padding: clamp(22px, 4vw, 38px);
   display: grid;
   gap: 12px;
-  background: white;
+  background: var(--color-card);
   box-shadow: var(--shadow-sm);
 }
 
@@ -40,7 +40,7 @@
   border: 1px solid var(--color-border);
   border-radius: 8px;
   padding: clamp(18px, 4vw, 28px);
-  background: white;
+  background: var(--color-card);
   box-shadow: var(--shadow-sm);
 }
 
@@ -78,7 +78,7 @@
   grid-template-columns: auto 1fr;
   gap: 12px;
   color: var(--color-muted);
-  background: white;
+  background: var(--color-card);
 }
 
 .steps li::before {
@@ -99,7 +99,7 @@
   padding: 18px;
   display: grid;
   gap: 12px;
-  background: white;
+  background: var(--color-card);
   box-shadow: var(--shadow-sm);
 }
 

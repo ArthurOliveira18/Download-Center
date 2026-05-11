@@ -62,7 +62,7 @@
   border-radius: 8px;
   padding: 0 12px;
   color: var(--color-text);
-  background: white;
+  background: var(--color-field);
   font: inherit;
   text-transform: none;
   outline: none;
