@@ -1,6 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { internalApps } from "@/data/apps";
+import { resolveLinkedGuideFromForm } from "@/services/linkedGuideService";
 import { normalizeText, tokenize } from "@/utils/search";
 import { slugify } from "@/utils/slug";
 
@@ -10,8 +11,9 @@ export async function createInternalAppFromForm(formData) {
   const nome = getRequiredText(formData, "nome", "Informe o nome do aplicativo.");
   const categoria = getRequiredText(formData, "categoria", "Informe a categoria.");
   const descricao = getRequiredText(formData, "descricao", "Informe a descricao.");
+  const linkedGuideResult = resolveLinkedGuideFromForm(formData);
 
-  const validationError = nome.error || categoria.error || descricao.error;
+  const validationError = nome.error || categoria.error || descricao.error || linkedGuideResult.error;
 
   if (validationError) {
     return { ok: false, error: validationError };
@@ -24,6 +26,7 @@ export async function createInternalAppFromForm(formData) {
   }
 
   const metadados = getOptionalText(formData, "metadados");
+  const linkedGuide = linkedGuideResult.guide;
   const app = {
     id,
     nome: nome.value,
@@ -32,7 +35,12 @@ export async function createInternalAppFromForm(formData) {
     versao: getOptionalText(formData, "versao"),
     observacoes: getList(formData, "observacoes"),
     metadados,
-    keywords: uniqueValues([...getList(formData, "metadados"), ...tokenize(`${nome.value} ${categoria.value}`)]),
+    keywords: uniqueValues([
+      ...getList(formData, "metadados"),
+      ...(linkedGuide?.titulo ? tokenize(linkedGuide.titulo) : []),
+      ...tokenize(`${nome.value} ${categoria.value}`)
+    ]),
+    guiaVinculado: linkedGuide,
     destaque: false,
     download: {
       nome: nome.value,
@@ -63,14 +71,16 @@ export async function updateInternalAppEditableFieldsFromForm(formData) {
   const nome = getRequiredText(formData, "nome", "Informe o nome do aplicativo.");
   const categoria = getRequiredText(formData, "categoria", "Informe a categoria.");
   const descricao = getRequiredText(formData, "descricao", "Informe a descricao.");
+  const linkedGuideResult = resolveLinkedGuideFromForm(formData);
 
-  const validationError = nome.error || categoria.error || descricao.error;
+  const validationError = nome.error || categoria.error || descricao.error || linkedGuideResult.error;
 
   if (validationError) {
     return { ok: false, error: validationError };
   }
 
   const metadados = getOptionalText(formData, "metadados");
+  const linkedGuide = linkedGuideResult.guide;
   const nextApps = internalApps.map((app, index) => {
     if (index !== appIndex) {
       return app;
@@ -84,9 +94,11 @@ export async function updateInternalAppEditableFieldsFromForm(formData) {
       versao: getOptionalText(formData, "versao"),
       observacoes: getList(formData, "observacoes"),
       metadados,
+      guiaVinculado: linkedGuide,
       keywords: uniqueValues([
         ...(app.keywords || []),
         ...getList(formData, "metadados"),
+        ...(linkedGuide?.titulo ? tokenize(linkedGuide.titulo) : []),
         ...tokenize(`${nome.value} ${categoria.value} ${metadados}`)
       ])
     };

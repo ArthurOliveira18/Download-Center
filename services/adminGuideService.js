@@ -66,6 +66,24 @@ export async function deleteGuideFromForm(formData) {
   return { ok: true, id: id.value };
 }
 
+export async function deleteGuidesFromForm(formData) {
+  const ids = uniqueIds(formData.getAll("ids"));
+
+  if (!ids.length) {
+    return { ok: false, error: "Selecione pelo menos um guia para excluir." };
+  }
+
+  const existingIds = new Set(guides.map((guide) => guide.id));
+  const invalidId = ids.find((id) => !existingIds.has(id));
+
+  if (invalidId) {
+    return { ok: false, error: "Um dos guias selecionados nao foi encontrado." };
+  }
+
+  await writeGuides(guides.filter((guide) => !ids.includes(guide.id)));
+  return { ok: true, ids, count: ids.length };
+}
+
 function buildGuideFromForm(formData) {
   const titulo = must(getRequiredText(formData, "titulo", "Informe o nome do guia."));
   const marca = must(getRequiredText(formData, "marca", "Informe a marca."));
@@ -136,6 +154,10 @@ function getListFromRepeatedFields(formData, key) {
 
 function uniqueValues(values) {
   return [...new Set(values.map((value) => normalizeText(value)).filter(Boolean))];
+}
+
+function uniqueIds(values) {
+  return [...new Set(values.map((value) => String(value || "").trim()).filter(Boolean))];
 }
 
 function must(result) {

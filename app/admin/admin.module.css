@@ -443,6 +443,7 @@
 
 .wideField,
 .protectedFile,
+.linkedGuideField,
 .deletePanel,
 .readOnlyBox {
   grid-column: 1 / -1;
@@ -459,6 +460,7 @@
 .field input,
 .field select,
 .wideField input,
+.wideField select,
 .wideField textarea,
 .fileInput {
   width: 100%;
@@ -485,6 +487,7 @@
 .field input:focus,
 .field select:focus,
 .wideField input:focus,
+.wideField select:focus,
 .wideField textarea:focus,
 .fileInput:focus {
   border-color: rgba(194, 27, 27, 0.52);
@@ -507,6 +510,35 @@
 .protectedFile svg {
   flex: 0 0 auto;
   color: var(--color-brand);
+}
+
+.linkedGuideField {
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 14px;
+  display: grid;
+  gap: 12px;
+  background: var(--color-surface);
+}
+
+.inlineHelper {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
+  color: var(--color-muted);
+  font-size: 0.9rem;
+  font-weight: 750;
+}
+
+.inlineHelper a {
+  color: var(--color-brand-strong);
+  font-weight: 900;
+  text-decoration: none;
+}
+
+.inlineHelper a:hover {
+  text-decoration: underline;
 }
 
 .deletePanel {

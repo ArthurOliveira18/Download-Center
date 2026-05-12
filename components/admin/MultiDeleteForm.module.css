@@ -1,0 +1,128 @@
+.form {
+  display: grid;
+  gap: 16px;
+}
+
+.summary,
+.empty {
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 14px;
+  background: var(--color-surface);
+}
+
+.summary {
+  display: grid;
+  gap: 5px;
+}
+
+.summary strong {
+  color: var(--color-text);
+}
+
+.summary span,
+.empty,
+.hint,
+.item small {
+  color: var(--color-muted);
+  line-height: 1.45;
+}
+
+.list {
+  display: grid;
+  gap: 10px;
+}
+
+.item {
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 12px;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 12px;
+  color: var(--color-text);
+  background: var(--color-card);
+  cursor: pointer;
+  transition: border 180ms ease, background 180ms ease;
+}
+
+.item:hover,
+.selected {
+  border-color: rgba(194, 27, 27, 0.42);
+  background: var(--color-brand-soft);
+}
+
+.item input {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--color-brand);
+}
+
+.item span {
+  display: grid;
+  gap: 3px;
+}
+
+.hint {
+  font-size: 0.9rem;
+  font-weight: 750;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+}
+
+.cancel,
+.danger {
+  min-height: 42px;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 0 14px;
+  font-weight: 850;
+  text-decoration: none;
+}
+
+.cancel {
+  border: 1px solid var(--color-border-strong);
+  color: var(--color-text);
+  background: var(--color-card);
+}
+
+.cancel:hover {
+  border-color: rgba(194, 27, 27, 0.42);
+  color: var(--color-brand-strong);
+}
+
+.danger {
+  border: 1px solid rgba(194, 27, 27, 0.32);
+  color: var(--color-brand-strong);
+  background: var(--color-brand-soft);
+  cursor: pointer;
+}
+
+.danger:hover:not(:disabled) {
+  border-color: rgba(194, 27, 27, 0.52);
+}
+
+.danger:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+@media (max-width: 560px) {
+  .actions {
+    justify-content: stretch;
+  }
+
+  .cancel,
+  .danger {
+    width: 100%;
+  }
+}

@@ -17,18 +17,20 @@ import {
   X
 } from "lucide-react";
 import { DynamicListField } from "@/components/admin/DynamicListField";
+import { MultiDeleteForm } from "@/components/admin/MultiDeleteForm";
 import { guides as manualGuides } from "@/data/guides";
 import { getCurrentAdmin } from "@/lib/auth/server";
 import { getInternalApps } from "@/services/appService";
 import { getDrivers } from "@/services/driverService";
+import { getLinkedGuideOptions, getLinkedGuideValueForResource } from "@/services/linkedGuideService";
 import { getTutorials } from "@/services/tutorialContentService";
 import {
   createDriverAction,
   createGuideAction,
   createInternalAppAction,
   createTutorialAction,
-  deleteGuideAction,
-  deleteTutorialAction,
+  deleteGuidesAction,
+  deleteTutorialsAction,
   logoutAction,
   updateDriverAction,
   updateGuideAction,
@@ -75,9 +77,12 @@ export default async function AdminPage({ searchParams }) {
   const drivers = getDrivers();
   const apps = getInternalApps();
   const tutorials = getTutorials();
+  const guideOptions = getLinkedGuideOptions();
   const area = normalizeArea(getParam(params, "area"));
   const action = normalizeAction(getParam(params, "action"));
   const itemId = getParam(params, "item");
+  const linkedGuideValue = getParam(params, "linkedGuide");
+  const returnContext = getReturnContext(params);
 
   return (
     <div className={styles.page}>
@@ -105,10 +110,18 @@ export default async function AdminPage({ searchParams }) {
         <AdminAreaHome drivers={drivers} apps={apps} guides={manualGuides} tutorials={tutorials} />
       ) : null}
 
-      {area === "drivers" ? <DriversArea action={action} drivers={drivers} selectedId={itemId} /> : null}
-      {area === "apps" ? <AppsArea action={action} apps={apps} selectedId={itemId} /> : null}
-      {area === "guides" ? <GuidesArea action={action} apps={apps} drivers={drivers} selectedId={itemId} /> : null}
-      {area === "tutorials" ? <TutorialsArea action={action} selectedId={itemId} tutorials={tutorials} /> : null}
+      {area === "drivers" ? (
+        <DriversArea action={action} drivers={drivers} guideOptions={guideOptions} linkedGuideValue={linkedGuideValue} selectedId={itemId} />
+      ) : null}
+      {area === "apps" ? (
+        <AppsArea action={action} apps={apps} guideOptions={guideOptions} linkedGuideValue={linkedGuideValue} selectedId={itemId} />
+      ) : null}
+      {area === "guides" ? (
+        <GuidesArea action={action} apps={apps} drivers={drivers} returnContext={returnContext} selectedId={itemId} />
+      ) : null}
+      {area === "tutorials" ? (
+        <TutorialsArea action={action} returnContext={returnContext} selectedId={itemId} tutorials={tutorials} />
+      ) : null}
     </div>
   );
 }
@@ -170,7 +183,7 @@ function AreaHeader({ area }) {
   );
 }
 
-function DriversArea({ action, drivers, selectedId }) {
+function DriversArea({ action, drivers, guideOptions, linkedGuideValue, selectedId }) {
   const selectedDriver = drivers.find((driver) => driver.id === selectedId);
   const closeHref = "/admin?area=drivers";
 
@@ -207,7 +220,7 @@ function DriversArea({ action, drivers, selectedId }) {
 
       {action === "create" ? (
         <AdminModal closeHref={closeHref} eyebrow="Novo driver" icon={FilePlus2} title="Adicionar driver">
-          <DriverCreateForm />
+          <DriverCreateForm guideOptions={guideOptions} linkedGuideValue={linkedGuideValue} />
         </AdminModal>
       ) : null}
 
@@ -239,7 +252,7 @@ function DriversArea({ action, drivers, selectedId }) {
 
       {action === "edit" && selectedDriver ? (
         <AdminModal closeHref={closeHref} eyebrow="Editar dados permitidos" icon={ShieldCheck} title={`${selectedDriver.marca} ${selectedDriver.modelo}`}>
-          <DriverEditForm driver={selectedDriver} />
+          <DriverEditForm driver={selectedDriver} guideOptions={guideOptions} linkedGuideValue={linkedGuideValue} />
         </AdminModal>
       ) : null}
 
@@ -252,7 +265,7 @@ function DriversArea({ action, drivers, selectedId }) {
   );
 }
 
-function AppsArea({ action, apps, selectedId }) {
+function AppsArea({ action, apps, guideOptions, linkedGuideValue, selectedId }) {
   const selectedApp = apps.find((app) => app.id === selectedId);
   const closeHref = "/admin?area=apps";
 
@@ -289,7 +302,7 @@ function AppsArea({ action, apps, selectedId }) {
 
       {action === "create" ? (
         <AdminModal closeHref={closeHref} eyebrow="Novo aplicativo" icon={FilePlus2} title="Adicionar aplicativo">
-          <AppCreateForm />
+          <AppCreateForm guideOptions={guideOptions} linkedGuideValue={linkedGuideValue} />
         </AdminModal>
       ) : null}
 
@@ -315,7 +328,7 @@ function AppsArea({ action, apps, selectedId }) {
 
       {action === "edit" && selectedApp ? (
         <AdminModal closeHref={closeHref} eyebrow="Editar dados permitidos" icon={ShieldCheck} title={selectedApp.nome}>
-          <AppEditForm app={selectedApp} />
+          <AppEditForm app={selectedApp} guideOptions={guideOptions} linkedGuideValue={linkedGuideValue} />
         </AdminModal>
       ) : null}
 
@@ -328,7 +341,7 @@ function AppsArea({ action, apps, selectedId }) {
   );
 }
 
-function GuidesArea({ action, apps, drivers, selectedId }) {
+function GuidesArea({ action, apps, drivers, returnContext, selectedId }) {
   const selectedGuide = manualGuides.find((guide) => guide.id === selectedId);
   const closeHref = "/admin?area=guides";
 
@@ -343,7 +356,7 @@ function GuidesArea({ action, apps, drivers, selectedId }) {
             { href: "/admin?area=guides&action=create", icon: PlusCircle, label: "Criar guia" },
             { href: "/admin?area=guides&action=edit", icon: Pencil, label: "Editar guia" },
             { href: "/admin?area=guides&action=review", icon: Eye, label: "Revisar guia", secondary: true },
-            { href: "/admin?area=guides&action=delete", icon: Trash2, label: "Excluir guia", danger: true }
+            { href: "/admin?area=guides&action=delete", icon: Trash2, label: "Excluir guias", danger: true }
           ]}
         />
         <ResourceGrid
@@ -359,16 +372,32 @@ function GuidesArea({ action, apps, drivers, selectedId }) {
 
       {action === "create" ? (
         <AdminModal closeHref={closeHref} eyebrow="Novo guia" icon={BookOpen} title="Criar guia">
-          <GuideForm action={createGuideAction} apps={apps} drivers={drivers} submitLabel="Criar guia" />
+          <GuideForm action={createGuideAction} apps={apps} drivers={drivers} returnContext={returnContext} submitLabel="Criar guia" />
         </AdminModal>
       ) : null}
 
-      {["edit", "review", "delete"].includes(action) && !selectedGuide ? (
+      {["edit", "review"].includes(action) && !selectedGuide ? (
         <AdminModal closeHref={closeHref} eyebrow="Selecao do item" icon={ListChecks} title={`Qual guia deseja ${getActionVerb(action)}?`}>
           <SelectItemForm
             action={action}
             area="guides"
             items={manualGuides.map((guide) => ({ id: guide.id, label: guide.titulo }))}
+          />
+        </AdminModal>
+      ) : null}
+
+      {action === "delete" ? (
+        <AdminModal closeHref={closeHref} eyebrow="Exclusao com selecao" icon={Trash2} title="Excluir guias">
+          <MultiDeleteForm
+            action={deleteGuidesAction}
+            cancelHref={closeHref}
+            emptyMessage="Nenhum guia manual disponivel para excluir."
+            items={manualGuides.map((guide) => ({
+              id: guide.id,
+              title: guide.titulo,
+              description: [guide.categoria, guide.marca, guide.modelo].filter(Boolean).join(" - ")
+            }))}
+            noun="guia"
           />
         </AdminModal>
       ) : null}
@@ -391,17 +420,11 @@ function GuidesArea({ action, apps, drivers, selectedId }) {
         </AdminModal>
       ) : null}
 
-      {action === "delete" && selectedGuide ? (
-        <AdminModal closeHref={closeHref} eyebrow="Excluir guia" icon={Trash2} title={selectedGuide.titulo}>
-          <ReviewPanel compact content={selectedGuide} type="guide" />
-          <DeleteGuideForm id={selectedGuide.id} />
-        </AdminModal>
-      ) : null}
     </>
   );
 }
 
-function TutorialsArea({ action, selectedId, tutorials }) {
+function TutorialsArea({ action, returnContext, selectedId, tutorials }) {
   const selectedTutorial = tutorials.find((tutorial) => tutorial.id === selectedId);
   const closeHref = "/admin?area=tutorials";
 
@@ -416,7 +439,7 @@ function TutorialsArea({ action, selectedId, tutorials }) {
             { href: "/admin?area=tutorials&action=create", icon: PlusCircle, label: "Criar tutorial" },
             { href: "/admin?area=tutorials&action=edit", icon: Pencil, label: "Editar tutorial" },
             { href: "/admin?area=tutorials&action=review", icon: Eye, label: "Revisar tutorial", secondary: true },
-            { href: "/admin?area=tutorials&action=delete", icon: Trash2, label: "Excluir tutorial", danger: true }
+            { href: "/admin?area=tutorials&action=delete", icon: Trash2, label: "Excluir tutoriais", danger: true }
           ]}
         />
         <ResourceGrid
@@ -432,16 +455,32 @@ function TutorialsArea({ action, selectedId, tutorials }) {
 
       {action === "create" ? (
         <AdminModal closeHref={closeHref} eyebrow="Novo tutorial" icon={GraduationCap} title="Criar tutorial">
-          <TutorialForm action={createTutorialAction} submitLabel="Criar tutorial" />
+          <TutorialForm action={createTutorialAction} returnContext={returnContext} submitLabel="Criar tutorial" />
         </AdminModal>
       ) : null}
 
-      {["edit", "review", "delete"].includes(action) && !selectedTutorial ? (
+      {["edit", "review"].includes(action) && !selectedTutorial ? (
         <AdminModal closeHref={closeHref} eyebrow="Selecao do item" icon={ListChecks} title={`Qual tutorial deseja ${getActionVerb(action)}?`}>
           <SelectItemForm
             action={action}
             area="tutorials"
             items={tutorials.map((tutorial) => ({ id: tutorial.id, label: tutorial.titulo }))}
+          />
+        </AdminModal>
+      ) : null}
+
+      {action === "delete" ? (
+        <AdminModal closeHref={closeHref} eyebrow="Exclusao com selecao" icon={Trash2} title="Excluir tutoriais">
+          <MultiDeleteForm
+            action={deleteTutorialsAction}
+            cancelHref={closeHref}
+            emptyMessage="Nenhum tutorial disponivel para excluir."
+            items={tutorials.map((tutorial) => ({
+              id: tutorial.id,
+              title: tutorial.titulo,
+              description: tutorial.categoria
+            }))}
+            noun="tutorial"
           />
         </AdminModal>
       ) : null}
@@ -462,12 +501,6 @@ function TutorialsArea({ action, selectedId, tutorials }) {
         </AdminModal>
       ) : null}
 
-      {action === "delete" && selectedTutorial ? (
-        <AdminModal closeHref={closeHref} eyebrow="Excluir tutorial" icon={Trash2} title={selectedTutorial.titulo}>
-          <ReviewPanel compact content={selectedTutorial} type="tutorial" />
-          <DeleteTutorialForm id={selectedTutorial.id} />
-        </AdminModal>
-      ) : null}
     </>
   );
 }
@@ -572,7 +605,7 @@ function SelectItemForm({ action, area, items }) {
   );
 }
 
-function DriverCreateForm() {
+function DriverCreateForm({ guideOptions, linkedGuideValue }) {
   return (
     <form action={createDriverAction} className={styles.formGrid}>
       <label className={styles.field}>
@@ -611,6 +644,11 @@ function DriverCreateForm() {
         <span>Descricao</span>
         <textarea name="descricao" placeholder="Descreva o uso do driver e contexto de instalacao." required />
       </label>
+      <LinkedGuideField
+        defaultValue={linkedGuideValue}
+        guideOptions={guideOptions}
+        returnContext={{ area: "drivers", action: "create" }}
+      />
       <button className={styles.submit} type="submit">
         <Save size={17} />
         Adicionar driver
@@ -619,7 +657,9 @@ function DriverCreateForm() {
   );
 }
 
-function DriverEditForm({ driver }) {
+function DriverEditForm({ driver, guideOptions, linkedGuideValue }) {
+  const selectedGuideValue = linkedGuideValue || getLinkedGuideValueForResource(driver);
+
   return (
     <form action={updateDriverAction} className={styles.formGrid}>
       <input type="hidden" name="id" value={driver.id} />
@@ -655,6 +695,11 @@ function DriverEditForm({ driver }) {
           placeholder="Palavras-chave, familia, sistema operacional, contexto de suporte"
         />
       </label>
+      <LinkedGuideField
+        defaultValue={selectedGuideValue}
+        guideOptions={guideOptions}
+        returnContext={{ area: "drivers", action: "edit", item: driver.id }}
+      />
       <ProtectedFile text={`Arquivo protegido: ${driver.driver?.downloadUrl || "sem arquivo vinculado"}`} />
       <button className={styles.submit} type="submit">
         <Save size={17} />
@@ -664,7 +709,7 @@ function DriverEditForm({ driver }) {
   );
 }
 
-function AppCreateForm() {
+function AppCreateForm({ guideOptions, linkedGuideValue }) {
   return (
     <form action={createInternalAppAction} className={styles.formGrid}>
       <label className={styles.field}>
@@ -691,6 +736,11 @@ function AppCreateForm() {
         <span>Metadados</span>
         <textarea name="metadados" placeholder="Palavras-chave, uso interno, requisitos, contexto de suporte" />
       </label>
+      <LinkedGuideField
+        defaultValue={linkedGuideValue}
+        guideOptions={guideOptions}
+        returnContext={{ area: "apps", action: "create" }}
+      />
       <ProtectedFile text="Arquivo protegido: nenhum arquivo sera alterado nesta acao." />
       <button className={styles.submit} type="submit">
         <Save size={17} />
@@ -700,7 +750,9 @@ function AppCreateForm() {
   );
 }
 
-function AppEditForm({ app }) {
+function AppEditForm({ app, guideOptions, linkedGuideValue }) {
+  const selectedGuideValue = linkedGuideValue || getLinkedGuideValueForResource(app);
+
   return (
     <form action={updateInternalAppAction} className={styles.formGrid}>
       <input type="hidden" name="id" value={app.id} />
@@ -736,12 +788,40 @@ function AppEditForm({ app }) {
           placeholder="Palavras-chave, uso interno, requisitos, contexto de suporte"
         />
       </label>
+      <LinkedGuideField
+        defaultValue={selectedGuideValue}
+        guideOptions={guideOptions}
+        returnContext={{ area: "apps", action: "edit", item: app.id }}
+      />
       <ProtectedFile text={`Arquivo protegido: ${app.download?.downloadUrl || app.status || "sem arquivo vinculado"}`} />
       <button className={styles.submit} type="submit">
         <Save size={17} />
         Salvar dados
       </button>
     </form>
+  );
+}
+
+function LinkedGuideField({ defaultValue = "", guideOptions = [], returnContext }) {
+  return (
+    <div className={styles.linkedGuideField}>
+      <label className={styles.wideField}>
+        <span>Guia de instalacao vinculado</span>
+        <select name="guiaVinculado" defaultValue={defaultValue}>
+          <option value="">Nenhum guia vinculado</option>
+          {guideOptions.map((option) => (
+            <option key={option.value} value={option.value}>
+              {option.label}
+            </option>
+          ))}
+        </select>
+      </label>
+      <div className={styles.inlineHelper}>
+        <span>Guia nao cadastrado?</span>
+        <Link href={buildRelatedContentHref("guides", returnContext)}>Criar guia de instalacao</Link>
+        <Link href={buildRelatedContentHref("tutorials", returnContext)}>Criar tutorial</Link>
+      </div>
+    </div>
   );
 }
 
@@ -754,10 +834,11 @@ function ProtectedFile({ text }) {
   );
 }
 
-function GuideForm({ action, apps, drivers, guide, submitLabel }) {
+function GuideForm({ action, apps, drivers, guide, returnContext, submitLabel }) {
   return (
     <form action={action} className={styles.formGrid}>
       {guide ? <input type="hidden" name="id" value={guide.id} /> : null}
+      <ReturnContextFields returnContext={returnContext} />
       <label className={styles.field}>
         <span>Nome do guia</span>
         <input name="titulo" defaultValue={guide?.titulo || ""} required />
@@ -834,10 +915,11 @@ function GuideForm({ action, apps, drivers, guide, submitLabel }) {
   );
 }
 
-function TutorialForm({ action, tutorial, submitLabel }) {
+function TutorialForm({ action, returnContext, tutorial, submitLabel }) {
   return (
     <form action={action} className={styles.formGrid}>
       {tutorial ? <input type="hidden" name="id" value={tutorial.id} /> : null}
+      <ReturnContextFields returnContext={returnContext} />
       <label className={styles.field}>
         <span>Nome</span>
         <input name="titulo" defaultValue={tutorial?.titulo || ""} required />
@@ -880,35 +962,17 @@ function TutorialForm({ action, tutorial, submitLabel }) {
   );
 }
 
-function DeleteGuideForm({ id }) {
-  return (
-    <form action={deleteGuideAction} className={styles.deletePanel}>
-      <input type="hidden" name="id" value={id} />
-      <div>
-        <strong>Confirmar exclusao</strong>
-        <span>Esta acao e permitida somente para guias e tutoriais.</span>
-      </div>
-      <button className={styles.danger} type="submit">
-        <Trash2 size={17} />
-        Excluir guia
-      </button>
-    </form>
-  );
-}
+function ReturnContextFields({ returnContext }) {
+  if (!returnContext?.area || !returnContext?.action) {
+    return null;
+  }
 
-function DeleteTutorialForm({ id }) {
   return (
-    <form action={deleteTutorialAction} className={styles.deletePanel}>
-      <input type="hidden" name="id" value={id} />
-      <div>
-        <strong>Confirmar exclusao</strong>
-        <span>Esta acao e permitida somente para guias e tutoriais.</span>
-      </div>
-      <button className={styles.danger} type="submit">
-        <Trash2 size={17} />
-        Excluir tutorial
-      </button>
-    </form>
+    <>
+      <input type="hidden" name="returnArea" value={returnContext.area} />
+      <input type="hidden" name="returnAction" value={returnContext.action} />
+      {returnContext.item ? <input type="hidden" name="returnItem" value={returnContext.item} /> : null}
+    </>
   );
 }
 
@@ -952,6 +1016,7 @@ function getReviewDetails(content, type) {
         { label: "Tipo", value: "Driver" },
         { label: "Categoria", value: content.categoria || "Sem categoria" },
         { label: "Versao", value: content.driver?.versao || "Sem versao" },
+        { label: "Guia vinculado", value: content.guiaVinculado?.titulo || content.guiaInstalacao?.titulo || "Nao informado" },
         { label: "Compatibilidade", value: (content.compatibilidade || []).length || "Nao informada" },
         { label: "Observacoes", value: (content.observacoes || []).length },
         { label: "Metadados", value: (content.keywords || []).length }
@@ -970,6 +1035,7 @@ function getReviewDetails(content, type) {
         { label: "Categoria", value: content.categoria || "Sem categoria" },
         { label: "Versao", value: content.versao || "Sem versao" },
         { label: "Status", value: content.status || "Disponivel" },
+        { label: "Guia vinculado", value: content.guiaVinculado?.titulo || "Nao informado" },
         { label: "Observacoes", value: (content.observacoes || []).length },
         { label: "Metadados", value: (content.keywords || []).length }
       ]
@@ -1002,9 +1068,11 @@ function AdminMessages({ params }) {
     getParam(params, "guideCreated") ? `Guia criado com sucesso: ${getParam(params, "guideCreated")}` : "",
     getParam(params, "guideUpdated") ? `Guia atualizado com sucesso: ${getParam(params, "guideUpdated")}` : "",
     getParam(params, "guideDeleted") ? `Guia excluido com sucesso: ${getParam(params, "guideDeleted")}` : "",
+    getParam(params, "guidesDeleted") ? `${getParam(params, "guidesDeleted")} guia(s) excluido(s) com sucesso.` : "",
     getParam(params, "tutorialCreated") ? `Tutorial criado com sucesso: ${getParam(params, "tutorialCreated")}` : "",
     getParam(params, "tutorialUpdated") ? `Tutorial atualizado com sucesso: ${getParam(params, "tutorialUpdated")}` : "",
-    getParam(params, "tutorialDeleted") ? `Tutorial excluido com sucesso: ${getParam(params, "tutorialDeleted")}` : ""
+    getParam(params, "tutorialDeleted") ? `Tutorial excluido com sucesso: ${getParam(params, "tutorialDeleted")}` : "",
+    getParam(params, "tutorialsDeleted") ? `${getParam(params, "tutorialsDeleted")} tutorial(is) excluido(s) com sucesso.` : ""
   ].filter(Boolean);
   const error = getParam(params, "error");
 
@@ -1022,6 +1090,33 @@ function getActionVerb(action) {
   if (action === "review") return "revisar";
   if (action === "delete") return "excluir";
   return "editar";
+}
+
+function buildRelatedContentHref(area, returnContext) {
+  const params = new URLSearchParams({ area, action: "create" });
+
+  if (returnContext?.area && returnContext?.action) {
+    params.set("returnArea", returnContext.area);
+    params.set("returnAction", returnContext.action);
+
+    if (returnContext.item) {
+      params.set("returnItem", returnContext.item);
+    }
+  }
+
+  return `/admin?${params.toString()}`;
+}
+
+function getReturnContext(params) {
+  const area = getParam(params, "returnArea");
+  const action = getParam(params, "returnAction");
+  const item = getParam(params, "returnItem");
+
+  if (!["drivers", "apps"].includes(area) || !["create", "edit"].includes(action)) {
+    return null;
+  }
+
+  return { area, action, item };
 }
 
 function normalizeAction(action) {

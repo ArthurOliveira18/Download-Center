@@ -6,6 +6,7 @@ export function DriverCard({ driver, compact = false }) {
   const downloadUrl = driver.driver?.downloadUrl;
   const fileIsMissing = driver.arquivo?.checked && !driver.arquivo.exists;
   const canDownload = Boolean(downloadUrl) && !fileIsMissing;
+  const linkedGuideUrl = driver.guiaVinculado?.url || driver.guiaInstalacao?.url;
   const statusLabel = fileIsMissing ? "Arquivo pendente" : "Arquivo verificado";
   const StatusIcon = fileIsMissing ? AlertCircle : CheckCircle2;
 
@@ -43,10 +44,10 @@ export function DriverCard({ driver, compact = false }) {
           </button>
         )}
 
-        {driver.guiaInstalacao?.url ? (
-          <Link className={styles.secondaryAction} href={driver.guiaInstalacao.url}>
+        {linkedGuideUrl ? (
+          <Link className={styles.secondaryAction} href={linkedGuideUrl}>
             <BookOpen size={17} />
-            Guia
+            Ver guia de instalacao
           </Link>
         ) : null}
       </div>

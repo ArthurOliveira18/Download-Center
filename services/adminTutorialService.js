@@ -57,6 +57,24 @@ export async function deleteTutorialFromForm(formData) {
   return { ok: true, id };
 }
 
+export async function deleteTutorialsFromForm(formData) {
+  const ids = uniqueIds(formData.getAll("ids"));
+
+  if (!ids.length) {
+    return { ok: false, error: "Selecione pelo menos um tutorial para excluir." };
+  }
+
+  const existingIds = new Set(tutorials.map((tutorial) => tutorial.id));
+  const invalidId = ids.find((id) => !existingIds.has(id));
+
+  if (invalidId) {
+    return { ok: false, error: "Um dos tutoriais selecionados nao foi encontrado." };
+  }
+
+  await writeTutorials(tutorials.filter((tutorial) => !ids.includes(tutorial.id)));
+  return { ok: true, ids, count: ids.length };
+}
+
 function buildTutorialFromForm(formData) {
   const titulo = must(getRequiredText(formData, "titulo", "Informe o nome do tutorial."));
   const categoria = must(getRequiredText(formData, "categoria", "Informe a categoria."));
@@ -110,6 +128,10 @@ function getListFromRepeatedFields(formData, key) {
 
 function uniqueValues(values) {
   return [...new Set(values.map((value) => normalizeText(value)).filter(Boolean))];
+}
+
+function uniqueIds(values) {
+  return [...new Set(values.map((value) => String(value || "").trim()).filter(Boolean))];
 }
 
 function must(result) {

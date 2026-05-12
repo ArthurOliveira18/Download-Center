@@ -1,6 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { drivers } from "@/data/drivers";
+import { resolveLinkedGuideFromForm } from "@/services/linkedGuideService";
 import { saveDriverFile } from "@/services/storage/localDriverStorage";
 import { normalizeText, tokenize } from "@/utils/search";
 import { slugify } from "@/utils/slug";
@@ -18,6 +19,7 @@ export async function createDriverFromForm(formData) {
   const keywords = getList(formData, "keywords");
   const guiaTitulo = getOptionalText(formData, "guiaTitulo") || `Como instalar ${marca.value} ${modelo.value}`;
   const destaque = formData.get("destaque") === "on";
+  const linkedGuideResult = resolveLinkedGuideFromForm(formData);
 
   const validationError =
     marca.error ||
@@ -25,7 +27,8 @@ export async function createDriverFromForm(formData) {
     categoria.error ||
     driverName.error ||
     versao.error ||
-    descricao.error;
+    descricao.error ||
+    linkedGuideResult.error;
 
   if (validationError) {
     return { ok: false, error: validationError };
@@ -58,9 +61,11 @@ export async function createDriverFromForm(formData) {
 
   const id = `${slugify(marca.value)}-${slugify(modelo.value)}`;
   const guideUrl = `/guias/${slugify(marca.value)}/${slugify(modelo.value)}`;
+  const linkedGuide = linkedGuideResult.guide;
   const normalizedKeywords = uniqueValues([
     ...keywords,
     ...tokenize(`${marca.value} ${modelo.value} ${categoria.value} ${driverName.value}`),
+    ...(linkedGuide?.titulo ? tokenize(linkedGuide.titulo) : []),
     "driver"
   ]);
 
@@ -86,9 +91,10 @@ export async function createDriverFromForm(formData) {
         }
       ]
     },
+    guiaVinculado: linkedGuide,
     guiaInstalacao: {
-      titulo: guiaTitulo,
-      url: guideUrl,
+      titulo: linkedGuide?.type === "guide" ? linkedGuide.titulo : guiaTitulo,
+      url: linkedGuide?.type === "guide" ? linkedGuide.url : guideUrl,
       passos: [
         "Baixe o driver cadastrado no Download Center.",
         "Extraia o arquivo, quando aplicavel.",
@@ -124,18 +130,29 @@ export async function updateDriverEditableFieldsFromForm(formData) {
   const categoria = getRequiredText(formData, "categoria", "Informe a categoria.");
   const versao = getRequiredText(formData, "versao", "Informe a versao do driver.");
   const descricao = getRequiredText(formData, "descricao", "Informe a descricao.");
+  const linkedGuideResult = resolveLinkedGuideFromForm(formData);
 
-  const validationError = driverName.error || categoria.error || versao.error || descricao.error;
+  const validationError = driverName.error || categoria.error || versao.error || descricao.error || linkedGuideResult.error;
 
   if (validationError) {
     return { ok: false, error: validationError };
   }
 
   const metadados = getOptionalText(formData, "metadados");
+  const linkedGuide = linkedGuideResult.guide;
   const nextDrivers = drivers.map((driver, index) => {
     if (index !== driverIndex) {
       return driver;
     }
+
+    const guiaInstalacao =
+      linkedGuide?.type === "guide"
+        ? {
+            ...(driver.guiaInstalacao || {}),
+            titulo: linkedGuide.titulo,
+            url: linkedGuide.url
+          }
+        : driver.guiaInstalacao;
 
     return {
       ...driver,
@@ -144,9 +161,12 @@ export async function updateDriverEditableFieldsFromForm(formData) {
       compatibilidade: getList(formData, "compatibilidade"),
       observacoes: getList(formData, "observacoes"),
       metadados,
+      guiaVinculado: linkedGuide,
+      guiaInstalacao,
       keywords: uniqueValues([
         ...(driver.keywords || []),
         ...getList(formData, "metadados"),
+        ...(linkedGuide?.titulo ? tokenize(linkedGuide.titulo) : []),
         ...tokenize(`${driver.marca} ${driver.modelo} ${categoria.value} ${driverName.value} ${versao.value}`)
       ]),
       driver: {

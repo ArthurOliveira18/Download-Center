@@ -43,7 +43,15 @@
   line-height: 1.5;
 }
 
+.actions {
+  min-width: 168px;
+  display: grid;
+  justify-items: stretch;
+  gap: 8px;
+}
+
 .action,
+.secondaryAction,
 .disabled {
   min-height: 42px;
   border-radius: 8px;
@@ -58,9 +66,26 @@
   white-space: nowrap;
 }
 
+.action,
+.secondaryAction,
+.disabled {
+  width: 100%;
+}
+
 .action {
   color: white;
   background: var(--color-brand);
+}
+
+.secondaryAction {
+  border: 1px solid var(--color-border-strong);
+  color: var(--color-text);
+  background: var(--color-card);
+}
+
+.secondaryAction:hover {
+  border-color: rgba(194, 27, 27, 0.42);
+  color: var(--color-brand-strong);
 }
 
 .disabled {
@@ -77,5 +102,9 @@
   .icon {
     width: 42px;
     height: 42px;
+  }
+
+  .actions {
+    min-width: 0;
   }
 }

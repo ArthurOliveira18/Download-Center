@@ -14,11 +14,13 @@ import {
 import {
   createGuideFromForm,
   deleteGuideFromForm,
+  deleteGuidesFromForm,
   updateGuideFromForm
 } from "@/services/adminGuideService";
 import {
   createTutorialFromForm,
   deleteTutorialFromForm,
+  deleteTutorialsFromForm,
   updateTutorialFromForm
 } from "@/services/adminTutorialService";
 
@@ -35,6 +37,7 @@ export async function createDriverAction(formData) {
   revalidatePath("/drivers");
   revalidatePath("/guias");
   revalidatePath(result.driver.guiaInstalacao.url);
+  revalidateLinkedGuide(result.driver.guiaVinculado);
 
   redirect(`/admin?area=drivers&action=edit&item=${encodeURIComponent(result.driver.id)}&created=${encodeURIComponent(result.driver.id)}`);
 }
@@ -52,6 +55,7 @@ export async function updateDriverAction(formData) {
   revalidatePath("/drivers");
   revalidatePath("/guias");
   revalidatePath(result.driver.guiaInstalacao?.url || "/guias");
+  revalidateLinkedGuide(result.driver.guiaVinculado);
 
   redirect(`/admin?area=drivers&action=edit&item=${encodeURIComponent(result.driver.id)}&updated=${encodeURIComponent(result.driver.id)}`);
 }
@@ -67,6 +71,7 @@ export async function createInternalAppAction(formData) {
 
   revalidatePath("/");
   revalidatePath("/apps");
+  revalidateLinkedGuide(result.app.guiaVinculado);
 
   redirect(`/admin?area=apps&action=edit&item=${encodeURIComponent(result.app.id)}&appCreated=${encodeURIComponent(result.app.id)}`);
 }
@@ -82,6 +87,7 @@ export async function updateInternalAppAction(formData) {
 
   revalidatePath("/");
   revalidatePath("/apps");
+  revalidateLinkedGuide(result.app.guiaVinculado);
 
   redirect(`/admin?area=apps&action=edit&item=${encodeURIComponent(result.app.id)}&appUpdated=${encodeURIComponent(result.app.id)}`);
 }
@@ -97,6 +103,12 @@ export async function createGuideAction(formData) {
 
   revalidatePath("/guias");
   revalidatePath(result.guide ? `/guias/${result.guide.marca}/${result.guide.modelo}` : "/guias");
+
+  const returnTarget = getReturnTarget(formData, `guide:${result.guide.id}`);
+
+  if (returnTarget) {
+    redirect(returnTarget);
+  }
 
   redirect(`/admin?area=guides&action=edit&item=${encodeURIComponent(result.guide.id)}&guideCreated=${encodeURIComponent(result.guide.id)}`);
 }
@@ -127,6 +139,19 @@ export async function deleteGuideAction(formData) {
   redirect(`/admin?area=guides&guideDeleted=${encodeURIComponent(result.id)}`);
 }
 
+export async function deleteGuidesAction(formData) {
+  await requireAdmin();
+
+  const result = await deleteGuidesFromForm(formData);
+
+  if (!result.ok) {
+    redirect(`/admin?area=guides&action=delete&error=${encodeURIComponent(result.error)}`);
+  }
+
+  revalidatePath("/guias");
+  redirect(`/admin?area=guides&guidesDeleted=${encodeURIComponent(String(result.count))}`);
+}
+
 export async function createTutorialAction(formData) {
   await requireAdmin();
 
@@ -138,6 +163,13 @@ export async function createTutorialAction(formData) {
 
   revalidatePath("/tutoriais");
   revalidatePath(`/tutoriais/${result.tutorial.id}`);
+
+  const returnTarget = getReturnTarget(formData, `tutorial:${result.tutorial.id}`);
+
+  if (returnTarget) {
+    redirect(returnTarget);
+  }
+
   redirect(`/admin?area=tutorials&action=edit&item=${encodeURIComponent(result.tutorial.id)}&tutorialCreated=${encodeURIComponent(result.tutorial.id)}`);
 }
 
@@ -161,11 +193,24 @@ export async function deleteTutorialAction(formData) {
   const result = await deleteTutorialFromForm(formData);
 
   if (!result.ok) {
-    redirect(`/admin?area=tutorials&action=edit&error=${encodeURIComponent(result.error)}`);
+    redirect(`/admin?area=tutorials&action=delete&error=${encodeURIComponent(result.error)}`);
   }
 
   revalidatePath("/tutoriais");
   redirect(`/admin?area=tutorials&tutorialDeleted=${encodeURIComponent(result.id)}`);
+}
+
+export async function deleteTutorialsAction(formData) {
+  await requireAdmin();
+
+  const result = await deleteTutorialsFromForm(formData);
+
+  if (!result.ok) {
+    redirect(`/admin?area=tutorials&action=delete&error=${encodeURIComponent(result.error)}`);
+  }
+
+  revalidatePath("/tutoriais");
+  redirect(`/admin?area=tutorials&tutorialsDeleted=${encodeURIComponent(String(result.count))}`);
 }
 
 export async function logoutAction() {
@@ -181,4 +226,34 @@ async function requireAdmin() {
   }
 
   return admin;
+}
+
+function revalidateLinkedGuide(guide) {
+  if (guide?.url) {
+    revalidatePath(guide.url);
+  }
+}
+
+function getReturnTarget(formData, linkedGuide) {
+  const returnArea = String(formData.get("returnArea") || "").trim();
+  const returnAction = String(formData.get("returnAction") || "").trim();
+  const returnItem = String(formData.get("returnItem") || "").trim();
+
+  if (!["drivers", "apps"].includes(returnArea) || !["create", "edit"].includes(returnAction)) {
+    return "";
+  }
+
+  const params = new URLSearchParams({
+    area: returnArea,
+    action: returnAction,
+    linkedGuide
+  });
+  const createdId = linkedGuide.replace(/^(guide|tutorial):/, "");
+  params.set(linkedGuide.startsWith("tutorial:") ? "tutorialCreated" : "guideCreated", createdId);
+
+  if (returnItem) {
+    params.set("item", returnItem);
+  }
+
+  return `/admin?${params.toString()}`;
 }
