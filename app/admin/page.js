@@ -13,7 +13,8 @@ import {
   PlusCircle,
   Save,
   ShieldCheck,
-  Trash2
+  Trash2,
+  X
 } from "lucide-react";
 import { DynamicListField } from "@/components/admin/DynamicListField";
 import { guides as manualGuides } from "@/data/guides";
@@ -171,6 +172,7 @@ function AreaHeader({ area }) {
 
 function DriversArea({ action, drivers, selectedId }) {
   const selectedDriver = drivers.find((driver) => driver.id === selectedId);
+  const closeHref = "/admin?area=drivers";
 
   return (
     <>
@@ -204,50 +206,55 @@ function DriversArea({ action, drivers, selectedId }) {
       </section>
 
       {action === "create" ? (
-        <section className={styles.panel}>
-          <AreaToolbar eyebrow="Novo driver" icon={FilePlus2} title="Adicionar driver" />
+        <AdminModal closeHref={closeHref} eyebrow="Novo driver" icon={FilePlus2} title="Adicionar driver">
           <DriverCreateForm />
-        </section>
+        </AdminModal>
       ) : null}
 
       {action === "edit" && !selectedDriver ? (
-        <SelectItemPanel
-          action="edit"
-          area="drivers"
-          items={drivers.map((driver) => ({
-            id: driver.id,
-            label: `${driver.marca} ${driver.modelo} - ${driver.driver?.nome || "Driver"}`
-          }))}
-          title="Qual driver deseja editar?"
-        />
+        <AdminModal closeHref={closeHref} eyebrow="Selecao do item" icon={ListChecks} title="Qual driver deseja editar?">
+          <SelectItemForm
+            action="edit"
+            area="drivers"
+            items={drivers.map((driver) => ({
+              id: driver.id,
+              label: `${driver.marca} ${driver.modelo} - ${driver.driver?.nome || "Driver"}`
+            }))}
+          />
+        </AdminModal>
       ) : null}
 
       {action === "review" && !selectedDriver ? (
-        <SelectItemPanel
-          action="review"
-          area="drivers"
-          items={drivers.map((driver) => ({
-            id: driver.id,
-            label: `${driver.marca} ${driver.modelo} - ${driver.driver?.nome || "Driver"}`
-          }))}
-          title="Qual driver deseja revisar?"
-        />
+        <AdminModal closeHref={closeHref} eyebrow="Selecao do item" icon={ListChecks} title="Qual driver deseja revisar?">
+          <SelectItemForm
+            action="review"
+            area="drivers"
+            items={drivers.map((driver) => ({
+              id: driver.id,
+              label: `${driver.marca} ${driver.modelo} - ${driver.driver?.nome || "Driver"}`
+            }))}
+          />
+        </AdminModal>
       ) : null}
 
       {action === "edit" && selectedDriver ? (
-        <section className={styles.panel}>
-          <AreaToolbar eyebrow="Editar dados permitidos" icon={ShieldCheck} title={`${selectedDriver.marca} ${selectedDriver.modelo}`} />
+        <AdminModal closeHref={closeHref} eyebrow="Editar dados permitidos" icon={ShieldCheck} title={`${selectedDriver.marca} ${selectedDriver.modelo}`}>
           <DriverEditForm driver={selectedDriver} />
-        </section>
+        </AdminModal>
       ) : null}
 
-      {action === "review" && selectedDriver ? <ReviewPanel content={selectedDriver} type="driver" /> : null}
+      {action === "review" && selectedDriver ? (
+        <AdminModal closeHref={closeHref} eyebrow="Revisar driver" icon={Eye} title={`${selectedDriver.marca} ${selectedDriver.modelo}`}>
+          <ReviewPanel content={selectedDriver} type="driver" />
+        </AdminModal>
+      ) : null}
     </>
   );
 }
 
 function AppsArea({ action, apps, selectedId }) {
   const selectedApp = apps.find((app) => app.id === selectedId);
+  const closeHref = "/admin?area=apps";
 
   return (
     <>
@@ -281,44 +288,49 @@ function AppsArea({ action, apps, selectedId }) {
       </section>
 
       {action === "create" ? (
-        <section className={styles.panel}>
-          <AreaToolbar eyebrow="Novo aplicativo" icon={FilePlus2} title="Adicionar aplicativo interno" />
+        <AdminModal closeHref={closeHref} eyebrow="Novo aplicativo" icon={FilePlus2} title="Adicionar aplicativo">
           <AppCreateForm />
-        </section>
+        </AdminModal>
       ) : null}
 
       {action === "edit" && !selectedApp ? (
-        <SelectItemPanel
-          action="edit"
-          area="apps"
-          items={apps.map((app) => ({ id: app.id, label: app.nome }))}
-          title="Qual aplicativo deseja editar?"
-        />
+        <AdminModal closeHref={closeHref} eyebrow="Selecao do item" icon={ListChecks} title="Qual aplicativo deseja editar?">
+          <SelectItemForm
+            action="edit"
+            area="apps"
+            items={apps.map((app) => ({ id: app.id, label: app.nome }))}
+          />
+        </AdminModal>
       ) : null}
 
       {action === "review" && !selectedApp ? (
-        <SelectItemPanel
-          action="review"
-          area="apps"
-          items={apps.map((app) => ({ id: app.id, label: app.nome }))}
-          title="Qual aplicativo deseja revisar?"
-        />
+        <AdminModal closeHref={closeHref} eyebrow="Selecao do item" icon={ListChecks} title="Qual aplicativo deseja revisar?">
+          <SelectItemForm
+            action="review"
+            area="apps"
+            items={apps.map((app) => ({ id: app.id, label: app.nome }))}
+          />
+        </AdminModal>
       ) : null}
 
       {action === "edit" && selectedApp ? (
-        <section className={styles.panel}>
-          <AreaToolbar eyebrow="Editar dados permitidos" icon={ShieldCheck} title={selectedApp.nome} />
+        <AdminModal closeHref={closeHref} eyebrow="Editar dados permitidos" icon={ShieldCheck} title={selectedApp.nome}>
           <AppEditForm app={selectedApp} />
-        </section>
+        </AdminModal>
       ) : null}
 
-      {action === "review" && selectedApp ? <ReviewPanel content={selectedApp} type="app" /> : null}
+      {action === "review" && selectedApp ? (
+        <AdminModal closeHref={closeHref} eyebrow="Revisar aplicativo" icon={Eye} title={selectedApp.nome}>
+          <ReviewPanel content={selectedApp} type="app" />
+        </AdminModal>
+      ) : null}
     </>
   );
 }
 
 function GuidesArea({ action, apps, drivers, selectedId }) {
   const selectedGuide = manualGuides.find((guide) => guide.id === selectedId);
+  const closeHref = "/admin?area=guides";
 
   return (
     <>
@@ -346,24 +358,23 @@ function GuidesArea({ action, apps, drivers, selectedId }) {
       </section>
 
       {action === "create" ? (
-        <section className={styles.panel}>
-          <AreaToolbar eyebrow="Novo guia" icon={BookOpen} title="Criar guia" />
+        <AdminModal closeHref={closeHref} eyebrow="Novo guia" icon={BookOpen} title="Criar guia">
           <GuideForm action={createGuideAction} apps={apps} drivers={drivers} submitLabel="Criar guia" />
-        </section>
+        </AdminModal>
       ) : null}
 
       {["edit", "review", "delete"].includes(action) && !selectedGuide ? (
-        <SelectItemPanel
-          action={action}
-          area="guides"
-          items={manualGuides.map((guide) => ({ id: guide.id, label: guide.titulo }))}
-          title={`Qual guia deseja ${getActionVerb(action)}?`}
-        />
+        <AdminModal closeHref={closeHref} eyebrow="Selecao do item" icon={ListChecks} title={`Qual guia deseja ${getActionVerb(action)}?`}>
+          <SelectItemForm
+            action={action}
+            area="guides"
+            items={manualGuides.map((guide) => ({ id: guide.id, label: guide.titulo }))}
+          />
+        </AdminModal>
       ) : null}
 
       {action === "edit" && selectedGuide ? (
-        <section className={styles.panel}>
-          <AreaToolbar eyebrow="Editar guia" icon={BookOpen} title={selectedGuide.titulo} />
+        <AdminModal closeHref={closeHref} eyebrow="Editar guia" icon={BookOpen} title={selectedGuide.titulo}>
           <GuideForm
             action={updateGuideAction}
             apps={apps}
@@ -371,17 +382,20 @@ function GuidesArea({ action, apps, drivers, selectedId }) {
             guide={selectedGuide}
             submitLabel="Atualizar guia"
           />
-        </section>
+        </AdminModal>
       ) : null}
 
-      {action === "review" && selectedGuide ? <ReviewPanel content={selectedGuide} type="guide" /> : null}
+      {action === "review" && selectedGuide ? (
+        <AdminModal closeHref={closeHref} eyebrow="Revisar guia" icon={Eye} title={selectedGuide.titulo}>
+          <ReviewPanel content={selectedGuide} type="guide" />
+        </AdminModal>
+      ) : null}
 
       {action === "delete" && selectedGuide ? (
-        <section className={styles.panel}>
-          <AreaToolbar eyebrow="Excluir guia" icon={Trash2} title={selectedGuide.titulo} />
+        <AdminModal closeHref={closeHref} eyebrow="Excluir guia" icon={Trash2} title={selectedGuide.titulo}>
           <ReviewPanel compact content={selectedGuide} type="guide" />
           <DeleteGuideForm id={selectedGuide.id} />
-        </section>
+        </AdminModal>
       ) : null}
     </>
   );
@@ -389,6 +403,7 @@ function GuidesArea({ action, apps, drivers, selectedId }) {
 
 function TutorialsArea({ action, selectedId, tutorials }) {
   const selectedTutorial = tutorials.find((tutorial) => tutorial.id === selectedId);
+  const closeHref = "/admin?area=tutorials";
 
   return (
     <>
@@ -416,42 +431,66 @@ function TutorialsArea({ action, selectedId, tutorials }) {
       </section>
 
       {action === "create" ? (
-        <section className={styles.panel}>
-          <AreaToolbar eyebrow="Novo tutorial" icon={GraduationCap} title="Criar tutorial" />
+        <AdminModal closeHref={closeHref} eyebrow="Novo tutorial" icon={GraduationCap} title="Criar tutorial">
           <TutorialForm action={createTutorialAction} submitLabel="Criar tutorial" />
-        </section>
+        </AdminModal>
       ) : null}
 
       {["edit", "review", "delete"].includes(action) && !selectedTutorial ? (
-        <SelectItemPanel
-          action={action}
-          area="tutorials"
-          items={tutorials.map((tutorial) => ({ id: tutorial.id, label: tutorial.titulo }))}
-          title={`Qual tutorial deseja ${getActionVerb(action)}?`}
-        />
+        <AdminModal closeHref={closeHref} eyebrow="Selecao do item" icon={ListChecks} title={`Qual tutorial deseja ${getActionVerb(action)}?`}>
+          <SelectItemForm
+            action={action}
+            area="tutorials"
+            items={tutorials.map((tutorial) => ({ id: tutorial.id, label: tutorial.titulo }))}
+          />
+        </AdminModal>
       ) : null}
 
       {action === "edit" && selectedTutorial ? (
-        <section className={styles.panel}>
-          <AreaToolbar eyebrow="Editar tutorial" icon={GraduationCap} title={selectedTutorial.titulo} />
+        <AdminModal closeHref={closeHref} eyebrow="Editar tutorial" icon={GraduationCap} title={selectedTutorial.titulo}>
           <TutorialForm
             action={updateTutorialAction}
             tutorial={selectedTutorial}
             submitLabel="Atualizar tutorial"
           />
-        </section>
+        </AdminModal>
       ) : null}
 
-      {action === "review" && selectedTutorial ? <ReviewPanel content={selectedTutorial} type="tutorial" /> : null}
+      {action === "review" && selectedTutorial ? (
+        <AdminModal closeHref={closeHref} eyebrow="Revisar tutorial" icon={Eye} title={selectedTutorial.titulo}>
+          <ReviewPanel content={selectedTutorial} type="tutorial" />
+        </AdminModal>
+      ) : null}
 
       {action === "delete" && selectedTutorial ? (
-        <section className={styles.panel}>
-          <AreaToolbar eyebrow="Excluir tutorial" icon={Trash2} title={selectedTutorial.titulo} />
+        <AdminModal closeHref={closeHref} eyebrow="Excluir tutorial" icon={Trash2} title={selectedTutorial.titulo}>
           <ReviewPanel compact content={selectedTutorial} type="tutorial" />
           <DeleteTutorialForm id={selectedTutorial.id} />
-        </section>
+        </AdminModal>
       ) : null}
     </>
+  );
+}
+
+function AdminModal({ children, closeHref, eyebrow, icon: Icon = ClipboardCheck, title }) {
+  return (
+    <div className={styles.modalOverlay} role="presentation">
+      <section className={styles.modal} role="dialog" aria-modal="true" aria-labelledby="admin-modal-title">
+        <div className={styles.modalHeader}>
+          <div>
+            <span className={styles.eyebrow}>{eyebrow}</span>
+            <h2 id="admin-modal-title">{title}</h2>
+          </div>
+          <div className={styles.modalHeaderActions}>
+            <Icon size={22} />
+            <Link className={styles.modalClose} href={closeHref} aria-label="Fechar modal">
+              <X size={20} />
+            </Link>
+          </div>
+        </div>
+        <div className={styles.modalBody}>{children}</div>
+      </section>
+    </div>
   );
 }
 
@@ -510,29 +549,26 @@ function ResourceGrid({ items }) {
   );
 }
 
-function SelectItemPanel({ action, area, items, title }) {
+function SelectItemForm({ action, area, items }) {
   return (
-    <section className={styles.panel}>
-      <AreaToolbar eyebrow="Selecao do item" icon={ListChecks} title={title} />
-      <form className={styles.selectForm} method="get">
-        <input type="hidden" name="area" value={area} />
-        <input type="hidden" name="action" value={action} />
-        <label className={styles.field}>
-          <span>Item</span>
-          <select name="item" defaultValue="" required>
-            <option value="" disabled>Selecione um item</option>
-            {items.map((item) => (
-              <option key={item.id} value={item.id}>
-                {item.label}
-              </option>
-            ))}
-          </select>
-        </label>
-        <button className={styles.submit} type="submit">
-          Continuar
-        </button>
-      </form>
-    </section>
+    <form className={styles.selectForm} method="get">
+      <input type="hidden" name="area" value={area} />
+      <input type="hidden" name="action" value={action} />
+      <label className={styles.field}>
+        <span>Item</span>
+        <select name="item" defaultValue="" required>
+          <option value="" disabled>Selecione um item</option>
+          {items.map((item) => (
+            <option key={item.id} value={item.id}>
+              {item.label}
+            </option>
+          ))}
+        </select>
+      </label>
+      <button className={styles.submit} type="submit">
+        Continuar
+      </button>
+    </form>
   );
 }
 
@@ -878,11 +914,9 @@ function DeleteTutorialForm({ id }) {
 
 function ReviewPanel({ compact = false, content, type }) {
   const details = getReviewDetails(content, type);
-  const title = details.title;
 
   return (
-    <section className={compact ? styles.reviewEmbedded : styles.panel}>
-      <AreaToolbar eyebrow="Revisar informacoes" icon={Eye} title={title} />
+    <div className={compact ? styles.reviewEmbedded : styles.reviewContent}>
       <dl className={styles.reviewGrid}>
         {details.stats.map((stat) => (
           <div key={stat.label}>
@@ -896,14 +930,14 @@ function ReviewPanel({ compact = false, content, type }) {
         <p>{details.description}</p>
       </div>
       {details.file ? <ProtectedFile text={details.file} /> : null}
-      {details.editHref ? (
+      {details.editHref && !compact ? (
         <div className={styles.actionRow}>
           <Link className={styles.secondaryLink} href={details.editHref}>
             Editar este item
           </Link>
         </div>
       ) : null}
-    </section>
+    </div>
   );
 }
 

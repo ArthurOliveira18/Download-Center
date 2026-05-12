@@ -174,6 +174,75 @@
   gap: 10px;
 }
 
+.modalOverlay {
+  position: fixed;
+  inset: 0;
+  z-index: 80;
+  padding: 24px;
+  display: grid;
+  place-items: center;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+}
+
+.modal {
+  width: min(920px, 100%);
+  max-height: min(86vh, 920px);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  overflow: hidden;
+  color: var(--color-text);
+  background: var(--color-card);
+  box-shadow: var(--shadow-lg);
+}
+
+.modalHeader {
+  border-bottom: 1px solid var(--color-border);
+  padding: 18px clamp(18px, 4vw, 26px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  background: var(--color-card);
+}
+
+.modalHeader h2 {
+  color: var(--color-text);
+  font-size: clamp(1.35rem, 3vw, 1.8rem);
+  line-height: 1.1;
+}
+
+.modalHeaderActions {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--color-brand);
+}
+
+.modalClose {
+  width: 42px;
+  height: 42px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  display: grid;
+  place-items: center;
+  color: var(--color-text);
+  background: var(--color-field);
+  text-decoration: none;
+}
+
+.modalClose:hover {
+  border-color: rgba(194, 27, 27, 0.42);
+  color: var(--color-brand-strong);
+}
+
+.modalBody {
+  padding: clamp(18px, 4vw, 26px);
+  overflow: auto;
+}
+
 .actionCardGrid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -502,13 +571,17 @@
   font-weight: 850;
 }
 
+.reviewContent,
 .reviewEmbedded {
   grid-column: 1 / -1;
+  display: grid;
+  gap: 16px;
+}
+
+.reviewEmbedded {
   border: 1px solid var(--color-border);
   border-radius: 8px;
   padding: 16px;
-  display: grid;
-  gap: 16px;
   background: var(--color-surface);
 }
 
@@ -593,6 +666,7 @@
   .heroTop,
   .toolbar,
   .areaHeader,
+  .modalHeader,
   .deletePanel {
     align-items: flex-start;
     flex-direction: column;
@@ -605,5 +679,13 @@
   .formGrid,
   .selectForm {
     grid-template-columns: 1fr;
+  }
+
+  .modalOverlay {
+    padding: 12px;
+  }
+
+  .modal {
+    max-height: 92vh;
   }
 }
