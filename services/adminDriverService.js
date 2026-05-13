@@ -1,37 +1,40 @@
-import fs from "node:fs/promises";
-import path from "node:path";
-import { drivers } from "@/data/drivers";
+import { getDriversData, writeDriversData } from "@/services/dataRepository";
 import { resolveLinkedGuideFromForm } from "@/services/linkedGuideService";
+import { isSupabaseAdminConfigured } from "@/services/supabase/config";
+import { createSupabaseDriver, updateSupabaseDriver } from "@/services/supabase/driversSupabaseService";
+import { uploadDownloadFile } from "@/services/supabase/storageService";
 import { saveDriverFile } from "@/services/storage/localDriverStorage";
 import { normalizeText, tokenize } from "@/utils/search";
 import { slugify } from "@/utils/slug";
 
-const dataFilePath = path.join(process.cwd(), "data", "drivers.js");
+const thermalPrinterCategory = "Impressora termica";
 
 export async function createDriverFromForm(formData) {
+  const drivers = await getDriversData();
+  const useSupabase = isSupabaseAdminConfigured();
   const marca = getRequiredText(formData, "marca", "Informe a marca.");
   const modelo = getRequiredText(formData, "modelo", "Informe o modelo.");
-  const categoria = getRequiredText(formData, "categoria", "Informe a categoria.");
-  const driverName = getRequiredText(formData, "driverName", "Informe o nome do driver.");
-  const versao = getRequiredText(formData, "versao", "Informe a versao do driver.");
-  const descricao = getRequiredText(formData, "descricao", "Informe a descricao do driver.");
+  const driverName = getRequiredText(formData, "driverName", "Informe o nome.");
+  const versao = getOptionalText(formData, "versao");
+  const descricao = getOptionalText(formData, "descricao");
   const compatibilidade = getList(formData, "compatibilidade");
   const keywords = getList(formData, "keywords");
   const guiaTitulo = getOptionalText(formData, "guiaTitulo") || `Como instalar ${marca.value} ${modelo.value}`;
   const destaque = formData.get("destaque") === "on";
-  const linkedGuideResult = resolveLinkedGuideFromForm(formData);
+  const linkedGuideResult = await resolveLinkedGuideFromForm(formData);
 
   const validationError =
     marca.error ||
     modelo.error ||
-    categoria.error ||
     driverName.error ||
-    versao.error ||
-    descricao.error ||
     linkedGuideResult.error;
 
   if (validationError) {
     return { ok: false, error: validationError };
+  }
+
+  if (!hasFile(formData.get("arquivo"))) {
+    return { ok: false, error: "Selecione o arquivo do driver." };
   }
 
   const duplicate = drivers.find((driver) => {
@@ -48,12 +51,18 @@ export async function createDriverFromForm(formData) {
     };
   }
 
-  const upload = await saveDriverFile({
-    file: formData.get("arquivo"),
-    marca: marca.value,
-    modelo: modelo.value,
-    versao: versao.value
-  });
+  const upload = useSupabase
+    ? await uploadDownloadFile({
+        file: formData.get("arquivo"),
+        folder: "drivers",
+        nameParts: [marca.value, modelo.value, versao || driverName.value]
+      })
+    : await saveDriverFile({
+        file: formData.get("arquivo"),
+        marca: marca.value,
+        modelo: modelo.value,
+        versao
+      });
 
   if (!upload.ok) {
     return upload;
@@ -64,30 +73,33 @@ export async function createDriverFromForm(formData) {
   const linkedGuide = linkedGuideResult.guide;
   const normalizedKeywords = uniqueValues([
     ...keywords,
-    ...tokenize(`${marca.value} ${modelo.value} ${categoria.value} ${driverName.value}`),
+    ...tokenize(`${marca.value} ${modelo.value} ${thermalPrinterCategory} ${driverName.value}`),
     ...(linkedGuide?.titulo ? tokenize(linkedGuide.titulo) : []),
     "driver"
   ]);
+  const versionLabel = versao || "Atual";
 
   const newDriver = {
     id,
     marca: marca.value,
     modelo: modelo.value,
-    categoria: categoria.value,
-    descricao: descricao.value,
+    categoria: thermalPrinterCategory,
+    descricao,
     compatibilidade,
     keywords: normalizedKeywords,
     destaque,
     driver: {
       nome: driverName.value,
-      versao: versao.value,
-      localPath: upload.localPath,
+      versao,
+      localPath: upload.localPath || upload.storagePath,
       downloadUrl: upload.downloadUrl,
+      storagePath: upload.storagePath || "",
       versoes: [
         {
-          nome: versao.value,
+          nome: versionLabel,
           downloadUrl: upload.downloadUrl,
-          localPath: upload.localPath
+          localPath: upload.localPath || upload.storagePath,
+          storagePath: upload.storagePath || ""
         }
       ]
     },
@@ -96,7 +108,7 @@ export async function createDriverFromForm(formData) {
       titulo: linkedGuide?.type === "guide" ? linkedGuide.titulo : guiaTitulo,
       url: linkedGuide?.type === "guide" ? linkedGuide.url : guideUrl,
       passos: [
-        "Baixe o driver cadastrado no Download Center.",
+        "Baixe o driver de impressora termica cadastrado no Download Center.",
         "Extraia o arquivo, quando aplicavel.",
         "Execute o instalador como administrador.",
         "Configure a porta USB, serial ou rede.",
@@ -105,8 +117,16 @@ export async function createDriverFromForm(formData) {
     }
   };
 
-  await appendDriver(newDriver);
+  if (useSupabase) {
+    const createdDriver = await createSupabaseDriver(newDriver);
+    return {
+      ok: true,
+      driver: createdDriver
+    };
+  }
 
+  await appendDriver(drivers, newDriver);
+  
   return {
     ok: true,
     driver: newDriver
@@ -114,6 +134,8 @@ export async function createDriverFromForm(formData) {
 }
 
 export async function updateDriverEditableFieldsFromForm(formData) {
+  const drivers = await getDriversData();
+  const useSupabase = isSupabaseAdminConfigured();
   const id = getRequiredText(formData, "id", "Driver nao informado.");
 
   if (id.error) {
@@ -126,13 +148,12 @@ export async function updateDriverEditableFieldsFromForm(formData) {
     return { ok: false, error: "Driver nao encontrado." };
   }
 
-  const driverName = getRequiredText(formData, "driverName", "Informe o nome do driver.");
-  const categoria = getRequiredText(formData, "categoria", "Informe a categoria.");
-  const versao = getRequiredText(formData, "versao", "Informe a versao do driver.");
-  const descricao = getRequiredText(formData, "descricao", "Informe a descricao.");
-  const linkedGuideResult = resolveLinkedGuideFromForm(formData);
+  const driverName = getRequiredText(formData, "driverName", "Informe o nome.");
+  const versao = getOptionalText(formData, "versao");
+  const descricao = getOptionalText(formData, "descricao");
+  const linkedGuideResult = await resolveLinkedGuideFromForm(formData);
 
-  const validationError = driverName.error || categoria.error || versao.error || descricao.error || linkedGuideResult.error;
+  const validationError = driverName.error || linkedGuideResult.error;
 
   if (validationError) {
     return { ok: false, error: validationError };
@@ -148,16 +169,16 @@ export async function updateDriverEditableFieldsFromForm(formData) {
     const guiaInstalacao =
       linkedGuide?.type === "guide"
         ? {
-            ...(driver.guiaInstalacao || {}),
-            titulo: linkedGuide.titulo,
-            url: linkedGuide.url
-          }
+          ...(driver.guiaInstalacao || {}),
+          titulo: linkedGuide.titulo,
+          url: linkedGuide.url
+        }
         : driver.guiaInstalacao;
 
     return {
       ...driver,
-      categoria: categoria.value,
-      descricao: descricao.value,
+      categoria: thermalPrinterCategory,
+      descricao,
       compatibilidade: getList(formData, "compatibilidade"),
       observacoes: getList(formData, "observacoes"),
       metadados,
@@ -167,19 +188,27 @@ export async function updateDriverEditableFieldsFromForm(formData) {
         ...(driver.keywords || []),
         ...getList(formData, "metadados"),
         ...(linkedGuide?.titulo ? tokenize(linkedGuide.titulo) : []),
-        ...tokenize(`${driver.marca} ${driver.modelo} ${categoria.value} ${driverName.value} ${versao.value}`)
+        ...tokenize(`${driver.marca} ${driver.modelo} ${thermalPrinterCategory} ${driverName.value} ${versao}`)
       ]),
       driver: {
         ...driver.driver,
         nome: driverName.value,
-        versao: versao.value,
+        versao,
         versoes: (driver.driver?.versoes || []).map((item, versionIndex) => ({
           ...item,
-          nome: versionIndex === 0 ? versao.value : item.nome
+          nome: versionIndex === 0 ? versao || item.nome : item.nome
         }))
       }
     };
   });
+
+  if (useSupabase) {
+    const updatedDriver = await updateSupabaseDriver(id.value, nextDrivers[driverIndex]);
+    return {
+      ok: true,
+      driver: updatedDriver
+    };
+  }
 
   await writeDrivers(nextDrivers);
 
@@ -189,15 +218,13 @@ export async function updateDriverEditableFieldsFromForm(formData) {
   };
 }
 
-async function appendDriver(newDriver) {
+async function appendDriver(drivers, newDriver) {
   const nextDrivers = [...drivers, newDriver];
   await writeDrivers(nextDrivers);
 }
 
 async function writeDrivers(nextDrivers) {
-  const fileContents = `export const drivers = ${JSON.stringify(nextDrivers, null, 2)};\n`;
-
-  await fs.writeFile(dataFilePath, fileContents, "utf8");
+  await writeDriversData(nextDrivers);
 }
 
 function getRequiredText(formData, key, error) {
@@ -223,4 +250,8 @@ function getList(formData, key) {
 
 function uniqueValues(values) {
   return [...new Set(values.map((value) => value.trim()).filter(Boolean))];
+}
+
+function hasFile(file) {
+  return Boolean(file && typeof file.arrayBuffer === "function" && file.size > 0);
 }

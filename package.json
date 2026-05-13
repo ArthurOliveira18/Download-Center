@@ -6,9 +6,11 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "start": "next start"
+    "start": "next start",
+    "supabase:seed-local": "node scripts/supabase/seed-local-data.mjs"
   },
   "dependencies": {
+    "@supabase/supabase-js": "^2.105.4",
     "lucide-react": "latest",
     "next": "latest",
     "react": "latest",

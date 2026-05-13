@@ -2,13 +2,15 @@ import { AppCard } from "@/components/apps/AppCard";
 import { getInternalApps } from "@/services/appService";
 import styles from "../sectionPages.module.css";
 
+export const dynamic = "force-dynamic";
+
 export const metadata = {
   title: "Aplicativos internos",
   description: "Aplicativos internos e utilitarios da empresa."
 };
 
-export default function AppsPage() {
-  const apps = getInternalApps();
+export default async function AppsPage() {
+  const apps = await getInternalApps();
 
   return (
     <div className={styles.page}>

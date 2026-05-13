@@ -1,22 +1,30 @@
-import fs from "node:fs/promises";
-import path from "node:path";
-import { internalApps } from "@/data/apps";
+import { getAppsData, writeAppsData } from "@/services/dataRepository";
 import { resolveLinkedGuideFromForm } from "@/services/linkedGuideService";
+import { isSupabaseAdminConfigured } from "@/services/supabase/config";
+import { createSupabaseInternalApp, updateSupabaseInternalApp } from "@/services/supabase/internalAppsSupabaseService";
+import { uploadDownloadFile } from "@/services/supabase/storageService";
+import { saveInternalAppFile } from "@/services/storage/localDriverStorage";
 import { normalizeText, tokenize } from "@/utils/search";
 import { slugify } from "@/utils/slug";
 
-const appDataFilePath = path.join(process.cwd(), "data", "apps.js");
+const defaultInternalAppCategory = "Aplicativo interno";
 
 export async function createInternalAppFromForm(formData) {
-  const nome = getRequiredText(formData, "nome", "Informe o nome do aplicativo.");
-  const categoria = getRequiredText(formData, "categoria", "Informe a categoria.");
-  const descricao = getRequiredText(formData, "descricao", "Informe a descricao.");
-  const linkedGuideResult = resolveLinkedGuideFromForm(formData);
+  const internalApps = await getAppsData();
+  const useSupabase = isSupabaseAdminConfigured();
+  const nome = getRequiredText(formData, "nome", "Informe o nome.");
+  const categoria = getOptionalText(formData, "categoria") || defaultInternalAppCategory;
+  const descricao = getOptionalText(formData, "descricao");
+  const linkedGuideResult = await resolveLinkedGuideFromForm(formData);
 
-  const validationError = nome.error || categoria.error || descricao.error || linkedGuideResult.error;
+  const validationError = nome.error || linkedGuideResult.error;
 
   if (validationError) {
     return { ok: false, error: validationError };
+  }
+
+  if (!hasFile(formData.get("arquivo"))) {
+    return { ok: false, error: "Selecione o arquivo do aplicativo." };
   }
 
   const id = slugify(nome.value);
@@ -27,28 +35,50 @@ export async function createInternalAppFromForm(formData) {
 
   const metadados = getOptionalText(formData, "metadados");
   const linkedGuide = linkedGuideResult.guide;
+  const upload = useSupabase
+    ? await uploadDownloadFile({
+        file: formData.get("arquivo"),
+        folder: "apps",
+        nameParts: [nome.value, getOptionalText(formData, "versao") || "app"]
+      })
+    : await saveInternalAppFile({
+        file: formData.get("arquivo"),
+        nome: nome.value,
+        versao: getOptionalText(formData, "versao")
+      });
+
+  if (!upload.ok) {
+    return upload;
+  }
+
   const app = {
     id,
     nome: nome.value,
-    categoria: categoria.value,
-    descricao: descricao.value,
+    categoria,
+    descricao,
     versao: getOptionalText(formData, "versao"),
     observacoes: getList(formData, "observacoes"),
     metadados,
     keywords: uniqueValues([
       ...getList(formData, "metadados"),
       ...(linkedGuide?.titulo ? tokenize(linkedGuide.titulo) : []),
-      ...tokenize(`${nome.value} ${categoria.value}`)
+      ...tokenize(`${nome.value} ${categoria}`)
     ]),
     guiaVinculado: linkedGuide,
     destaque: false,
     download: {
       nome: nome.value,
-      localPath: "",
-      downloadUrl: ""
+      localPath: upload.localPath || upload.storagePath || "",
+      downloadUrl: upload.downloadUrl || "",
+      storagePath: upload.storagePath || ""
     },
-    status: "Em preparacao"
+    status: upload.downloadUrl ? "Disponivel" : "Em preparacao"
   };
+
+  if (useSupabase) {
+    const createdApp = await createSupabaseInternalApp(app);
+    return { ok: true, app: createdApp };
+  }
 
   await writeApps([...internalApps, app]);
 
@@ -56,6 +86,8 @@ export async function createInternalAppFromForm(formData) {
 }
 
 export async function updateInternalAppEditableFieldsFromForm(formData) {
+  const internalApps = await getAppsData();
+  const useSupabase = isSupabaseAdminConfigured();
   const id = getRequiredText(formData, "id", "Aplicativo nao informado.");
 
   if (id.error) {
@@ -68,12 +100,12 @@ export async function updateInternalAppEditableFieldsFromForm(formData) {
     return { ok: false, error: "Aplicativo nao encontrado." };
   }
 
-  const nome = getRequiredText(formData, "nome", "Informe o nome do aplicativo.");
-  const categoria = getRequiredText(formData, "categoria", "Informe a categoria.");
-  const descricao = getRequiredText(formData, "descricao", "Informe a descricao.");
-  const linkedGuideResult = resolveLinkedGuideFromForm(formData);
+  const nome = getRequiredText(formData, "nome", "Informe o nome.");
+  const categoria = getOptionalText(formData, "categoria") || defaultInternalAppCategory;
+  const descricao = getOptionalText(formData, "descricao");
+  const linkedGuideResult = await resolveLinkedGuideFromForm(formData);
 
-  const validationError = nome.error || categoria.error || descricao.error || linkedGuideResult.error;
+  const validationError = nome.error || linkedGuideResult.error;
 
   if (validationError) {
     return { ok: false, error: validationError };
@@ -89,8 +121,8 @@ export async function updateInternalAppEditableFieldsFromForm(formData) {
     return {
       ...app,
       nome: nome.value,
-      categoria: categoria.value,
-      descricao: descricao.value,
+      categoria,
+      descricao,
       versao: getOptionalText(formData, "versao"),
       observacoes: getList(formData, "observacoes"),
       metadados,
@@ -99,10 +131,18 @@ export async function updateInternalAppEditableFieldsFromForm(formData) {
         ...(app.keywords || []),
         ...getList(formData, "metadados"),
         ...(linkedGuide?.titulo ? tokenize(linkedGuide.titulo) : []),
-        ...tokenize(`${nome.value} ${categoria.value} ${metadados}`)
+        ...tokenize(`${nome.value} ${categoria} ${metadados}`)
       ])
     };
   });
+
+  if (useSupabase) {
+    const updatedApp = await updateSupabaseInternalApp(id.value, nextApps[appIndex]);
+    return {
+      ok: true,
+      app: updatedApp
+    };
+  }
 
   await writeApps(nextApps);
 
@@ -113,8 +153,7 @@ export async function updateInternalAppEditableFieldsFromForm(formData) {
 }
 
 async function writeApps(nextApps) {
-  const fileContents = `export const internalApps = ${JSON.stringify(nextApps, null, 2)};\n`;
-  await fs.writeFile(appDataFilePath, fileContents, "utf8");
+  await writeAppsData(nextApps);
 }
 
 function getRequiredText(formData, key, error) {
@@ -140,4 +179,8 @@ function getList(formData, key) {
 
 function uniqueValues(values) {
   return [...new Set(values.map((value) => normalizeText(value)).filter(Boolean))];
+}
+
+function hasFile(file) {
+  return Boolean(file && typeof file.arrayBuffer === "function" && file.size > 0);
 }

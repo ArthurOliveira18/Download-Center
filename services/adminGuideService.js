@@ -1,18 +1,22 @@
-import fs from "node:fs/promises";
-import path from "node:path";
-import { guides } from "@/data/guides";
+import { getGuidesData, writeGuidesData } from "@/services/dataRepository";
+import { isSupabaseAdminConfigured } from "@/services/supabase/config";
+import { createSupabaseGuide, deleteSupabaseGuides, updateSupabaseGuide } from "@/services/supabase/guidesSupabaseService";
 import { normalizeText, tokenize } from "@/utils/search";
 import { slugify } from "@/utils/slug";
 
-const guideDataFilePath = path.join(process.cwd(), "data", "guides.js");
-
 export async function createGuideFromForm(formData) {
   try {
+    const guides = await getGuidesData();
+    const useSupabase = isSupabaseAdminConfigured();
     const guide = buildGuideFromForm(formData);
-    const duplicate = guides.find((item) => item.id === guide.id);
+    const duplicate = guides.find((item) => item.id === guide.id || item.slug === guide.slug);
 
     if (duplicate) {
       return { ok: false, error: "Ja existe um guia manual com este nome, marca e modelo." };
+    }
+
+    if (useSupabase) {
+      return { ok: true, guide: await createSupabaseGuide(guide, "guide") };
     }
 
     await writeGuides([...guides, guide]);
@@ -24,6 +28,8 @@ export async function createGuideFromForm(formData) {
 
 export async function updateGuideFromForm(formData) {
   try {
+    const guides = await getGuidesData();
+    const useSupabase = isSupabaseAdminConfigured();
     const id = getRequiredText(formData, "id", "Guia nao informado.");
 
     if (id.error) {
@@ -42,6 +48,10 @@ export async function updateGuideFromForm(formData) {
     };
     const nextGuides = guides.map((guide, index) => (index === guideIndex ? updatedGuide : guide));
 
+    if (useSupabase) {
+      return { ok: true, guide: await updateSupabaseGuide(id.value, updatedGuide, "guide") };
+    }
+
     await writeGuides(nextGuides);
     return { ok: true, guide: updatedGuide };
   } catch (error) {
@@ -50,6 +60,8 @@ export async function updateGuideFromForm(formData) {
 }
 
 export async function deleteGuideFromForm(formData) {
+  const guides = await getGuidesData();
+  const useSupabase = isSupabaseAdminConfigured();
   const id = getRequiredText(formData, "id", "Guia nao informado.");
 
   if (id.error) {
@@ -62,11 +74,18 @@ export async function deleteGuideFromForm(formData) {
     return { ok: false, error: "Guia nao encontrado." };
   }
 
+  if (useSupabase) {
+    await deleteSupabaseGuides([id.value], "guide");
+    return { ok: true, id: id.value };
+  }
+
   await writeGuides(guides.filter((guide) => guide.id !== id.value));
   return { ok: true, id: id.value };
 }
 
 export async function deleteGuidesFromForm(formData) {
+  const guides = await getGuidesData();
+  const useSupabase = isSupabaseAdminConfigured();
   const ids = uniqueIds(formData.getAll("ids"));
 
   if (!ids.length) {
@@ -78,6 +97,11 @@ export async function deleteGuidesFromForm(formData) {
 
   if (invalidId) {
     return { ok: false, error: "Um dos guias selecionados nao foi encontrado." };
+  }
+
+  if (useSupabase) {
+    const count = await deleteSupabaseGuides(ids, "guide");
+    return { ok: true, ids, count };
   }
 
   await writeGuides(guides.filter((guide) => !ids.includes(guide.id)));
@@ -97,8 +121,11 @@ function buildGuideFromForm(formData) {
     "instalacao"
   ]);
 
+  const slug = `${slugify(titulo)}-${slugify(marca)}-${slugify(modelo)}`;
+
   return {
-    id: `${slugify(titulo)}-${slugify(marca)}-${slugify(modelo)}`,
+    id: slug,
+    slug,
     titulo,
     marca,
     modelo,
@@ -115,8 +142,7 @@ function buildGuideFromForm(formData) {
 }
 
 async function writeGuides(nextGuides) {
-  const fileContents = `export const guides = ${JSON.stringify(nextGuides, null, 2)};\n`;
-  await fs.writeFile(guideDataFilePath, fileContents, "utf8");
+  await writeGuidesData(nextGuides);
 }
 
 function getIssues(formData) {

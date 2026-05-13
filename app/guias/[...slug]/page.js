@@ -3,17 +3,18 @@ import { InstallationGuide } from "@/components/guides/InstallationGuide";
 import {
   buildGuideDetail,
   getGuideRecordByParams,
-  getGuideStaticParams
+  getGuideRecordBySlug
 } from "@/services/guideContentService";
-import styles from "../../../sectionPages.module.css";
+import styles from "../../sectionPages.module.css";
+
+export const dynamic = "force-dynamic";
 
 export function generateStaticParams() {
-  return getGuideStaticParams();
+  return [];
 }
 
 export async function generateMetadata({ params }) {
-  const { marca, modelo } = await params;
-  const guide = getGuideRecordByParams(marca, modelo);
+  const guide = await getGuideFromParams(await params);
 
   if (!guide) {
     return {
@@ -28,8 +29,7 @@ export async function generateMetadata({ params }) {
 }
 
 export default async function GuideDetailPage({ params }) {
-  const { marca, modelo } = await params;
-  const guideRecord = getGuideRecordByParams(marca, modelo);
+  const guideRecord = await getGuideFromParams(await params);
 
   if (!guideRecord) {
     notFound();
@@ -48,4 +48,18 @@ export default async function GuideDetailPage({ params }) {
       <InstallationGuide guide={guide} />
     </div>
   );
+}
+
+async function getGuideFromParams(params) {
+  const segments = Array.isArray(params?.slug) ? params.slug : [];
+
+  if (segments.length === 1) {
+    return getGuideRecordBySlug(segments[0]);
+  }
+
+  if (segments.length >= 2) {
+    return getGuideRecordByParams(segments[0], segments[1]);
+  }
+
+  return null;
 }

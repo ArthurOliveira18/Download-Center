@@ -37,7 +37,6 @@ export function getDriverSearchFields(driver) {
   return [
     driver.marca,
     driver.modelo,
-    driver.categoria,
     driver.descricao,
     driver.driver?.nome,
     driver.driver?.versao,
@@ -64,7 +63,6 @@ export function scoreDriver(driver, query) {
   const searchable = buildDriverSearchText(driver);
   const brand = normalizeText(driver.marca);
   const model = normalizeText(driver.modelo);
-  const category = normalizeText(driver.categoria);
   const description = normalizeText(driver.descricao);
   const driverName = normalizeText(driver.driver?.nome);
   const keywords = (driver.keywords || []).map(normalizeText);
@@ -77,14 +75,12 @@ export function scoreDriver(driver, query) {
   if (brand.includes(normalizedQuery)) score += 18;
   if (model.includes(normalizedQuery)) score += 18;
   if (driverName.includes(normalizedQuery)) score += 12;
-  if (category.includes(normalizedQuery)) score += 10;
   if (description.includes(normalizedQuery)) score += 8;
 
   tokens.forEach((token) => {
     if (brand.includes(token)) score += 8;
     if (model.includes(token)) score += 8;
     if (driverName.includes(token)) score += 6;
-    if (category.includes(token)) score += 5;
     if (description.includes(token)) score += 4;
     if (keywords.some((keyword) => keyword === token)) score += 7;
     if (keywords.some((keyword) => keyword.includes(token))) score += 5;

@@ -1,9 +1,9 @@
-import { internalApps } from "@/data/apps";
+import { getAppsData } from "@/services/dataRepository";
 import { getPublicFileStatus } from "@/services/fileService";
 import { uniqueSorted } from "@/utils/search";
 
-export function getInternalApps() {
-  return internalApps
+export async function getInternalApps() {
+  return (await getAppsData())
     .map((app) => ({
       ...app,
       arquivo: getPublicFileStatus(app.download?.downloadUrl)
@@ -11,6 +11,6 @@ export function getInternalApps() {
     .sort((a, b) => a.nome.localeCompare(b.nome, "pt-BR"));
 }
 
-export function getAppCategories() {
-  return uniqueSorted(internalApps.map((app) => app.categoria));
+export async function getAppCategories() {
+  return uniqueSorted((await getAppsData()).map((app) => app.categoria));
 }

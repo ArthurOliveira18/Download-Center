@@ -5,7 +5,7 @@ export function SiteFooter() {
     <footer className={styles.footer}>
       <div className={styles.inner}>
         <p>Download Center TAKEAT</p>
-        <p>Estrutura preparada para drivers, apps, guias e tutoriais.</p>
+        <p>Estrutura preparada para drivers de impressoras termicas, apps, guias e tutoriais.</p>
       </div>
     </footer>
   );

@@ -23,7 +23,7 @@ export function TutorialCard({ tutorial }) {
           </li>
         ))}
       </ul>
-      <Link className={styles.link} href={`/tutoriais/${tutorial.id}`}>
+      <Link className={styles.link} href={tutorial.url || `/tutoriais/${tutorial.slug || tutorial.id}`}>
         Abrir tutorial
         <ChevronRight size={17} />
       </Link>

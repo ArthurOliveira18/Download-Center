@@ -1,20 +1,20 @@
-import { tutorials } from "@/data/tutorials";
+import { getTutorialsData } from "@/services/dataRepository";
 import { normalizeText, tokenize, uniqueSorted } from "@/utils/search";
 
-export function getTutorials() {
-  return [...tutorials].sort((a, b) => a.titulo.localeCompare(b.titulo, "pt-BR"));
+export async function getTutorials() {
+  return [...(await getTutorialsData())].sort((a, b) => a.titulo.localeCompare(b.titulo, "pt-BR"));
 }
 
-export function getTutorialById(id) {
-  return tutorials.find((tutorial) => tutorial.id === id);
+export async function getTutorialById(id) {
+  return (await getTutorialsData()).find((tutorial) => tutorial.id === id || tutorial.slug === id);
 }
 
-export function getTutorialStaticParams() {
-  return tutorials.map((tutorial) => ({ id: tutorial.id }));
+export async function getTutorialStaticParams() {
+  return (await getTutorialsData()).map((tutorial) => ({ id: tutorial.slug || tutorial.id }));
 }
 
-export function getTutorialCategories() {
-  return uniqueSorted(tutorials.map((tutorial) => tutorial.categoria));
+export async function getTutorialCategories() {
+  return uniqueSorted((await getTutorialsData()).map((tutorial) => tutorial.categoria));
 }
 
 export function searchTutorialsInMemory(records, query) {

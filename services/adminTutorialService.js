@@ -1,17 +1,21 @@
-import fs from "node:fs/promises";
-import path from "node:path";
-import { tutorials } from "@/data/tutorials";
+import { getTutorialsData, writeTutorialsData } from "@/services/dataRepository";
+import { isSupabaseAdminConfigured } from "@/services/supabase/config";
+import { createSupabaseGuide, deleteSupabaseGuides, updateSupabaseGuide } from "@/services/supabase/guidesSupabaseService";
 import { normalizeText, tokenize } from "@/utils/search";
 import { slugify } from "@/utils/slug";
 
-const tutorialDataFilePath = path.join(process.cwd(), "data", "tutorials.js");
-
 export async function createTutorialFromForm(formData) {
   try {
+    const tutorials = await getTutorialsData();
+    const useSupabase = isSupabaseAdminConfigured();
     const tutorial = buildTutorialFromForm(formData);
 
-    if (tutorials.some((item) => item.id === tutorial.id)) {
+    if (tutorials.some((item) => item.id === tutorial.id || item.slug === tutorial.slug)) {
       return { ok: false, error: "Ja existe um tutorial com este nome." };
+    }
+
+    if (useSupabase) {
+      return { ok: true, tutorial: await createSupabaseGuide(tutorial, "tutorial") };
     }
 
     await writeTutorials([...tutorials, tutorial]);
@@ -23,6 +27,8 @@ export async function createTutorialFromForm(formData) {
 
 export async function updateTutorialFromForm(formData) {
   try {
+    const tutorials = await getTutorialsData();
+    const useSupabase = isSupabaseAdminConfigured();
     const id = must(getRequiredText(formData, "id", "Tutorial nao informado."));
     const tutorialIndex = tutorials.findIndex((tutorial) => tutorial.id === id);
 
@@ -35,6 +41,10 @@ export async function updateTutorialFromForm(formData) {
       id
     };
 
+    if (useSupabase) {
+      return { ok: true, tutorial: await updateSupabaseGuide(id, updatedTutorial, "tutorial") };
+    }
+
     await writeTutorials(tutorials.map((tutorial, index) => (index === tutorialIndex ? updatedTutorial : tutorial)));
     return { ok: true, tutorial: updatedTutorial };
   } catch (error) {
@@ -43,6 +53,8 @@ export async function updateTutorialFromForm(formData) {
 }
 
 export async function deleteTutorialFromForm(formData) {
+  const tutorials = await getTutorialsData();
+  const useSupabase = isSupabaseAdminConfigured();
   const id = String(formData.get("id") || "").trim();
 
   if (!id) {
@@ -53,11 +65,18 @@ export async function deleteTutorialFromForm(formData) {
     return { ok: false, error: "Tutorial nao encontrado." };
   }
 
+  if (useSupabase) {
+    await deleteSupabaseGuides([id], "tutorial");
+    return { ok: true, id };
+  }
+
   await writeTutorials(tutorials.filter((tutorial) => tutorial.id !== id));
   return { ok: true, id };
 }
 
 export async function deleteTutorialsFromForm(formData) {
+  const tutorials = await getTutorialsData();
+  const useSupabase = isSupabaseAdminConfigured();
   const ids = uniqueIds(formData.getAll("ids"));
 
   if (!ids.length) {
@@ -71,6 +90,11 @@ export async function deleteTutorialsFromForm(formData) {
     return { ok: false, error: "Um dos tutoriais selecionados nao foi encontrado." };
   }
 
+  if (useSupabase) {
+    const count = await deleteSupabaseGuides(ids, "tutorial");
+    return { ok: true, ids, count };
+  }
+
   await writeTutorials(tutorials.filter((tutorial) => !ids.includes(tutorial.id)));
   return { ok: true, ids, count: ids.length };
 }
@@ -80,8 +104,11 @@ function buildTutorialFromForm(formData) {
   const categoria = must(getRequiredText(formData, "categoria", "Informe a categoria."));
   const descricao = must(getRequiredText(formData, "descricao", "Informe a descricao."));
 
+  const slug = slugify(titulo);
+
   return {
-    id: slugify(titulo),
+    id: slug,
+    slug,
     titulo,
     categoria,
     descricao,
@@ -93,8 +120,7 @@ function buildTutorialFromForm(formData) {
 }
 
 async function writeTutorials(nextTutorials) {
-  const fileContents = `export const tutorials = ${JSON.stringify(nextTutorials, null, 2)};\n`;
-  await fs.writeFile(tutorialDataFilePath, fileContents, "utf8");
+  await writeTutorialsData(nextTutorials);
 }
 
 function getIssues(formData) {

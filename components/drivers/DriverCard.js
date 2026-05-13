@@ -22,7 +22,7 @@ export function DriverCard({ driver, compact = false }) {
 
       <div className={styles.body}>
         <h3>{driver.modelo}</h3>
-        <p>{driver.descricao}</p>
+        <p>{driver.descricao || "Driver de impressora termica para uso no Download Center TAKEAT."}</p>
       </div>
 
       <div className={styles.meta}>

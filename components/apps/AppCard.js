@@ -16,7 +16,7 @@ export function AppCard({ app }) {
       <div className={styles.content}>
         <span>{app.categoria}</span>
         <h3>{app.nome}</h3>
-        <p>{app.descricao}</p>
+        <p>{app.descricao || "Aplicativo interno disponivel no Download Center TAKEAT."}</p>
       </div>
       <div className={styles.actions}>
         {canDownload ? (

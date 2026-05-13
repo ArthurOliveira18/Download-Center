@@ -9,7 +9,7 @@ export async function loginAction(formData) {
   const result = await signInAdmin({ username, password });
 
   if (!result.ok) {
-    const errorCode = result.error.includes("AUTH_SECRET") ? "config" : "invalid";
+    const errorCode = result.error.includes("SECRET") ? "config" : "invalid";
     redirect(`/admin/login?error=${errorCode}`);
   }
 

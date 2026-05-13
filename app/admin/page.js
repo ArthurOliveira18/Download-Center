@@ -18,9 +18,9 @@ import {
 } from "lucide-react";
 import { DynamicListField } from "@/components/admin/DynamicListField";
 import { MultiDeleteForm } from "@/components/admin/MultiDeleteForm";
-import { guides as manualGuides } from "@/data/guides";
 import { getCurrentAdmin } from "@/lib/auth/server";
 import { getInternalApps } from "@/services/appService";
+import { getGuidesData } from "@/services/dataRepository";
 import { getDrivers } from "@/services/driverService";
 import { getLinkedGuideOptions, getLinkedGuideValueForResource } from "@/services/linkedGuideService";
 import { getTutorials } from "@/services/tutorialContentService";
@@ -39,11 +39,13 @@ import {
 } from "./actions";
 import styles from "./admin.module.css";
 
+export const dynamic = "force-dynamic";
+
 const adminAreas = {
   drivers: {
-    title: "Gerenciar Drivers",
+    title: "Gerenciar drivers de impressoras termicas",
     shortTitle: "Drivers",
-    description: "Adicione drivers e edite somente informacoes basicas. Arquivos existentes ficam protegidos.",
+    description: "Cadastre drivers para impressoras termicas e edite somente informacoes basicas. Arquivos existentes ficam protegidos.",
     icon: DownloadCloud
   },
   apps: {
@@ -74,10 +76,11 @@ export const metadata = {
 export default async function AdminPage({ searchParams }) {
   const params = await searchParams;
   const admin = await getCurrentAdmin();
-  const drivers = getDrivers();
-  const apps = getInternalApps();
-  const tutorials = getTutorials();
-  const guideOptions = getLinkedGuideOptions();
+  const drivers = await getDrivers();
+  const apps = await getInternalApps();
+  const tutorials = await getTutorials();
+  const manualGuides = await getGuidesData();
+  const guideOptions = await getLinkedGuideOptions();
   const area = normalizeArea(getParam(params, "area"));
   const action = normalizeAction(getParam(params, "action"));
   const itemId = getParam(params, "item");
@@ -117,7 +120,7 @@ export default async function AdminPage({ searchParams }) {
         <AppsArea action={action} apps={apps} guideOptions={guideOptions} linkedGuideValue={linkedGuideValue} selectedId={itemId} />
       ) : null}
       {area === "guides" ? (
-        <GuidesArea action={action} apps={apps} drivers={drivers} returnContext={returnContext} selectedId={itemId} />
+        <GuidesArea action={action} apps={apps} drivers={drivers} guides={manualGuides} returnContext={returnContext} selectedId={itemId} />
       ) : null}
       {area === "tutorials" ? (
         <TutorialsArea action={action} returnContext={returnContext} selectedId={itemId} tutorials={tutorials} />
@@ -138,7 +141,7 @@ function AdminAreaHome({ drivers, apps, guides, tutorials }) {
       </div>
 
       <div className={styles.categoryGrid}>
-        <AreaCard area="drivers" count={`${drivers.length} drivers`} />
+        <AreaCard area="drivers" count={`${drivers.length} drivers termicos`} />
         <AreaCard area="apps" count={`${apps.length} aplicativos`} />
         <AreaCard area="guides" count={`${guides.length} guias`} />
         <AreaCard area="tutorials" count={`${tutorials.length} tutoriais`} />
@@ -194,15 +197,15 @@ function DriversArea({ action, drivers, guideOptions, linkedGuideValue, selected
       <section className={styles.panel}>
         <AreaToolbar
           count={`${drivers.length} itens`}
-          eyebrow="Drivers cadastrados"
-          title="Escolha como deseja gerenciar os drivers"
+          eyebrow="Drivers de impressoras termicas"
+          title="Escolha como deseja gerenciar os drivers termicos"
         />
         <p className={styles.sectionNote}>
-          Drivers nao podem ser excluidos. Na edicao, o arquivo real nao aparece como campo e nao pode ser trocado.
+          Drivers de impressoras termicas nao podem ser excluidos. Na edicao, o arquivo real nao aparece como campo e nao pode ser trocado.
         </p>
         <ActionCards
           actions={[
-            { href: "/admin?area=drivers&action=create", icon: PlusCircle, label: "Adicionar driver" },
+            { href: "/admin?area=drivers&action=create", icon: PlusCircle, label: "Adicionar driver termico" },
             { href: "/admin?area=drivers&action=edit", icon: Pencil, label: "Editar driver" },
             { href: "/admin?area=drivers&action=review", icon: Eye, label: "Revisar driver", secondary: true }
           ]}
@@ -212,14 +215,14 @@ function DriversArea({ action, drivers, guideOptions, linkedGuideValue, selected
             id: driver.id,
             title: `${driver.marca} ${driver.modelo}`,
             eyebrow: driver.categoria,
-            description: driver.descricao,
+            description: driver.descricao || "Driver de impressora termica sem descricao cadastrada.",
             meta: [driver.driver?.nome, driver.driver?.versao].filter(Boolean)
           }))}
         />
       </section>
 
       {action === "create" ? (
-        <AdminModal closeHref={closeHref} eyebrow="Novo driver" icon={FilePlus2} title="Adicionar driver">
+        <AdminModal closeHref={closeHref} eyebrow="Novo driver termico" icon={FilePlus2} title="Cadastrar driver de impressora termica">
           <DriverCreateForm guideOptions={guideOptions} linkedGuideValue={linkedGuideValue} />
         </AdminModal>
       ) : null}
@@ -294,7 +297,7 @@ function AppsArea({ action, apps, guideOptions, linkedGuideValue, selectedId }) 
             id: app.id,
             title: app.nome,
             eyebrow: app.categoria,
-            description: app.descricao,
+            description: app.descricao || "Aplicativo interno sem descricao cadastrada.",
             meta: [app.versao || "Sem versao", app.status || "Disponivel"]
           }))}
         />
@@ -341,8 +344,8 @@ function AppsArea({ action, apps, guideOptions, linkedGuideValue, selectedId }) 
   );
 }
 
-function GuidesArea({ action, apps, drivers, returnContext, selectedId }) {
-  const selectedGuide = manualGuides.find((guide) => guide.id === selectedId);
+function GuidesArea({ action, apps, drivers, guides, returnContext, selectedId }) {
+  const selectedGuide = guides.find((guide) => guide.id === selectedId);
   const closeHref = "/admin?area=guides";
 
   return (
@@ -350,7 +353,7 @@ function GuidesArea({ action, apps, drivers, returnContext, selectedId }) {
       <AreaHeader area="guides" />
 
       <section className={styles.panel}>
-        <AreaToolbar count={`${manualGuides.length} itens`} eyebrow="Guias" title="Escolha como deseja gerenciar os guias" />
+        <AreaToolbar count={`${guides.length} itens`} eyebrow="Guias" title="Escolha como deseja gerenciar os guias" />
         <ActionCards
           actions={[
             { href: "/admin?area=guides&action=create", icon: PlusCircle, label: "Criar guia" },
@@ -360,7 +363,7 @@ function GuidesArea({ action, apps, drivers, returnContext, selectedId }) {
           ]}
         />
         <ResourceGrid
-          items={manualGuides.map((guide) => ({
+          items={guides.map((guide) => ({
             id: guide.id,
             title: guide.titulo,
             eyebrow: guide.categoria,
@@ -381,7 +384,7 @@ function GuidesArea({ action, apps, drivers, returnContext, selectedId }) {
           <SelectItemForm
             action={action}
             area="guides"
-            items={manualGuides.map((guide) => ({ id: guide.id, label: guide.titulo }))}
+            items={guides.map((guide) => ({ id: guide.id, label: guide.titulo }))}
           />
         </AdminModal>
       ) : null}
@@ -392,7 +395,7 @@ function GuidesArea({ action, apps, drivers, returnContext, selectedId }) {
             action={deleteGuidesAction}
             cancelHref={closeHref}
             emptyMessage="Nenhum guia manual disponivel para excluir."
-            items={manualGuides.map((guide) => ({
+            items={guides.map((guide) => ({
               id: guide.id,
               title: guide.titulo,
               description: [guide.categoria, guide.marca, guide.modelo].filter(Boolean).join(" - ")
@@ -607,7 +610,11 @@ function SelectItemForm({ action, area, items }) {
 
 function DriverCreateForm({ guideOptions, linkedGuideValue }) {
   return (
-    <form action={createDriverAction} className={styles.formGrid}>
+    <form action={createDriverAction} className={styles.formGrid} encType="multipart/form-data">
+      <label className={styles.field}>
+        <span>Nome do driver/impressora</span>
+        <input name="driverName" placeholder="Driver Oficial Windows" required />
+      </label>
       <label className={styles.field}>
         <span>Marca</span>
         <input name="marca" placeholder="Bematech, Epson, Elgin" required />
@@ -617,32 +624,24 @@ function DriverCreateForm({ guideOptions, linkedGuideValue }) {
         <input name="modelo" placeholder="MP-4200 TH, TM-T20X, i9" required />
       </label>
       <label className={styles.field}>
-        <span>Categoria</span>
-        <input name="categoria" defaultValue="Impressora termica" required />
+        <span>Versao (opcional)</span>
+        <input name="versao" placeholder="v1.0, Windows 64 bits" />
       </label>
       <label className={styles.field}>
-        <span>Nome</span>
-        <input name="driverName" placeholder="Driver Oficial Windows" required />
-      </label>
-      <label className={styles.field}>
-        <span>Versao</span>
-        <input name="versao" placeholder="v1.0, Windows 64 bits" required />
-      </label>
-      <label className={styles.field}>
-        <span>Arquivo inicial</span>
+        <span>Arquivo do driver</span>
         <input className={styles.fileInput} name="arquivo" type="file" accept=".zip,.rar,.7z,.exe,.msi" required />
       </label>
       <label className={styles.wideField}>
-        <span>Compatibilidade</span>
+        <span>Compatibilidade (opcional)</span>
         <input name="compatibilidade" placeholder="Windows 11, Windows 10 64-bit" />
       </label>
       <label className={styles.wideField}>
-        <span>Metadados</span>
+        <span>Metadados (opcional)</span>
         <input name="keywords" placeholder="4200, termica, usb, driver" />
       </label>
       <label className={styles.wideField}>
-        <span>Descricao</span>
-        <textarea name="descricao" placeholder="Descreva o uso do driver e contexto de instalacao." required />
+        <span>Descricao (opcional)</span>
+        <textarea name="descricao" placeholder="Descreva o uso do driver termico e contexto de instalacao." />
       </label>
       <LinkedGuideField
         defaultValue={linkedGuideValue}
@@ -651,44 +650,40 @@ function DriverCreateForm({ guideOptions, linkedGuideValue }) {
       />
       <button className={styles.submit} type="submit">
         <Save size={17} />
-        Adicionar driver
+        Adicionar driver termico
       </button>
     </form>
   );
 }
 
 function DriverEditForm({ driver, guideOptions, linkedGuideValue }) {
-  const selectedGuideValue = linkedGuideValue || getLinkedGuideValueForResource(driver);
+  const selectedGuideValue = linkedGuideValue || getLinkedGuideValueForResource(driver, guideOptions);
 
   return (
     <form action={updateDriverAction} className={styles.formGrid}>
       <input type="hidden" name="id" value={driver.id} />
       <label className={styles.field}>
-        <span>Nome</span>
+        <span>Nome do driver/impressora</span>
         <input name="driverName" defaultValue={driver.driver?.nome || ""} required />
       </label>
       <label className={styles.field}>
-        <span>Categoria</span>
-        <input name="categoria" defaultValue={driver.categoria} required />
+        <span>Versao (opcional)</span>
+        <input name="versao" defaultValue={driver.driver?.versao || ""} />
       </label>
       <label className={styles.field}>
-        <span>Versao</span>
-        <input name="versao" defaultValue={driver.driver?.versao || ""} required />
-      </label>
-      <label className={styles.field}>
-        <span>Compatibilidade</span>
+        <span>Compatibilidade (opcional)</span>
         <input name="compatibilidade" defaultValue={(driver.compatibilidade || []).join(", ")} />
       </label>
       <label className={styles.wideField}>
-        <span>Descricao</span>
-        <textarea name="descricao" defaultValue={driver.descricao} required />
+        <span>Descricao (opcional)</span>
+        <textarea name="descricao" defaultValue={driver.descricao} />
       </label>
       <label className={styles.wideField}>
-        <span>Observacoes</span>
+        <span>Observacoes (opcional)</span>
         <textarea name="observacoes" defaultValue={(driver.observacoes || []).join("\n")} />
       </label>
       <label className={styles.wideField}>
-        <span>Metadados</span>
+        <span>Metadados (opcional)</span>
         <textarea
           name="metadados"
           defaultValue={driver.metadados || (driver.keywords || []).join(", ")}
@@ -711,29 +706,33 @@ function DriverEditForm({ driver, guideOptions, linkedGuideValue }) {
 
 function AppCreateForm({ guideOptions, linkedGuideValue }) {
   return (
-    <form action={createInternalAppAction} className={styles.formGrid}>
+    <form action={createInternalAppAction} className={styles.formGrid} encType="multipart/form-data">
       <label className={styles.field}>
         <span>Nome</span>
         <input name="nome" placeholder="TAKEAT Printer" required />
       </label>
       <label className={styles.field}>
-        <span>Categoria</span>
-        <input name="categoria" defaultValue="Aplicativo interno" required />
+        <span>Categoria (opcional)</span>
+        <input name="categoria" defaultValue="Aplicativo interno" />
       </label>
       <label className={styles.field}>
-        <span>Versao</span>
+        <span>Versao (opcional)</span>
         <input name="versao" placeholder="v1.0" />
       </label>
-      <label className={styles.wideField}>
-        <span>Descricao</span>
-        <textarea name="descricao" placeholder="Descreva o uso interno do aplicativo." required />
+      <label className={styles.field}>
+        <span>Arquivo do aplicativo</span>
+        <input className={styles.fileInput} name="arquivo" type="file" accept=".zip,.rar,.7z,.exe,.msi" required />
       </label>
       <label className={styles.wideField}>
-        <span>Observacoes</span>
+        <span>Descricao (opcional)</span>
+        <textarea name="descricao" placeholder="Descreva o uso interno do aplicativo." />
+      </label>
+      <label className={styles.wideField}>
+        <span>Observacoes (opcional)</span>
         <textarea name="observacoes" />
       </label>
       <label className={styles.wideField}>
-        <span>Metadados</span>
+        <span>Metadados (opcional)</span>
         <textarea name="metadados" placeholder="Palavras-chave, uso interno, requisitos, contexto de suporte" />
       </label>
       <LinkedGuideField
@@ -741,7 +740,7 @@ function AppCreateForm({ guideOptions, linkedGuideValue }) {
         guideOptions={guideOptions}
         returnContext={{ area: "apps", action: "create" }}
       />
-      <ProtectedFile text="Arquivo protegido: nenhum arquivo sera alterado nesta acao." />
+      <ProtectedFile text="Arquivo protegido: depois de cadastrado, o instalador nao sera substituido nesta tela." />
       <button className={styles.submit} type="submit">
         <Save size={17} />
         Adicionar aplicativo
@@ -751,7 +750,7 @@ function AppCreateForm({ guideOptions, linkedGuideValue }) {
 }
 
 function AppEditForm({ app, guideOptions, linkedGuideValue }) {
-  const selectedGuideValue = linkedGuideValue || getLinkedGuideValueForResource(app);
+  const selectedGuideValue = linkedGuideValue || getLinkedGuideValueForResource(app, guideOptions);
 
   return (
     <form action={updateInternalAppAction} className={styles.formGrid}>
@@ -761,11 +760,11 @@ function AppEditForm({ app, guideOptions, linkedGuideValue }) {
         <input name="nome" defaultValue={app.nome || ""} required />
       </label>
       <label className={styles.field}>
-        <span>Categoria</span>
-        <input name="categoria" defaultValue={app.categoria || ""} required />
+        <span>Categoria (opcional)</span>
+        <input name="categoria" defaultValue={app.categoria || ""} />
       </label>
       <label className={styles.field}>
-        <span>Versao</span>
+        <span>Versao (opcional)</span>
         <input name="versao" defaultValue={app.versao || ""} />
       </label>
       <label className={styles.field}>
@@ -773,15 +772,15 @@ function AppEditForm({ app, guideOptions, linkedGuideValue }) {
         <input value={app.status || "Disponivel"} readOnly />
       </label>
       <label className={styles.wideField}>
-        <span>Descricao</span>
-        <textarea name="descricao" defaultValue={app.descricao || ""} required />
+        <span>Descricao (opcional)</span>
+        <textarea name="descricao" defaultValue={app.descricao || ""} />
       </label>
       <label className={styles.wideField}>
-        <span>Observacoes</span>
+        <span>Observacoes (opcional)</span>
         <textarea name="observacoes" defaultValue={(app.observacoes || []).join("\n")} />
       </label>
       <label className={styles.wideField}>
-        <span>Metadados</span>
+        <span>Metadados (opcional)</span>
         <textarea
           name="metadados"
           defaultValue={app.metadados || (app.keywords || []).join(", ")}
@@ -1009,12 +1008,12 @@ function getReviewDetails(content, type) {
   if (type === "driver") {
     return {
       title: `${content.marca} ${content.modelo}`,
-      description: content.descricao,
+      description: content.descricao || "Driver de impressora termica sem descricao cadastrada.",
       file: `Arquivo protegido: ${content.driver?.downloadUrl || "sem arquivo vinculado"}`,
       editHref: `/admin?area=drivers&action=edit&item=${content.id}`,
       stats: [
         { label: "Tipo", value: "Driver" },
-        { label: "Categoria", value: content.categoria || "Sem categoria" },
+        { label: "Tipo", value: "Impressora termica" },
         { label: "Versao", value: content.driver?.versao || "Sem versao" },
         { label: "Guia vinculado", value: content.guiaVinculado?.titulo || content.guiaInstalacao?.titulo || "Nao informado" },
         { label: "Compatibilidade", value: (content.compatibilidade || []).length || "Nao informada" },
@@ -1027,7 +1026,7 @@ function getReviewDetails(content, type) {
   if (type === "app") {
     return {
       title: content.nome,
-      description: content.descricao,
+      description: content.descricao || "Aplicativo interno sem descricao cadastrada.",
       file: `Arquivo protegido: ${content.download?.downloadUrl || content.status || "sem arquivo vinculado"}`,
       editHref: `/admin?area=apps&action=edit&item=${content.id}`,
       stats: [

@@ -1,17 +1,16 @@
-import { Cable, Printer, Wrench } from "lucide-react";
+import { Printer, Wrench } from "lucide-react";
 import styles from "./CategoryCards.module.css";
 
 const icons = {
-  "Impressora termica": Printer,
-  "Adaptador USB": Cable
+  "Impressora termica": Printer
 };
 
 export function CategoryCards({ categories, drivers }) {
   return (
     <section className={styles.section}>
       <div className={styles.heading}>
-        <span>Categorias</span>
-        <h2>Navegacao por tipo de recurso</h2>
+        <span>Impressoras termicas</span>
+        <h2>Navegacao por modelos termicos</h2>
       </div>
 
       <div className={styles.grid}>

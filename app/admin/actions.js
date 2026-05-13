@@ -36,7 +36,7 @@ export async function createDriverAction(formData) {
   revalidatePath("/");
   revalidatePath("/drivers");
   revalidatePath("/guias");
-  revalidatePath(result.driver.guiaInstalacao.url);
+  revalidatePath(result.driver.guiaInstalacao?.url || "/guias");
   revalidateLinkedGuide(result.driver.guiaVinculado);
 
   redirect(`/admin?area=drivers&action=edit&item=${encodeURIComponent(result.driver.id)}&created=${encodeURIComponent(result.driver.id)}`);
@@ -102,7 +102,7 @@ export async function createGuideAction(formData) {
   }
 
   revalidatePath("/guias");
-  revalidatePath(result.guide ? `/guias/${result.guide.marca}/${result.guide.modelo}` : "/guias");
+  revalidatePath(result.guide?.url || "/guias");
 
   const returnTarget = getReturnTarget(formData, `guide:${result.guide.id}`);
 
@@ -123,6 +123,7 @@ export async function updateGuideAction(formData) {
   }
 
   revalidatePath("/guias");
+  revalidatePath(result.guide?.url || "/guias");
   redirect(`/admin?area=guides&action=edit&item=${encodeURIComponent(result.guide.id)}&guideUpdated=${encodeURIComponent(result.guide.id)}`);
 }
 
@@ -162,7 +163,7 @@ export async function createTutorialAction(formData) {
   }
 
   revalidatePath("/tutoriais");
-  revalidatePath(`/tutoriais/${result.tutorial.id}`);
+  revalidatePath(result.tutorial?.url || `/tutoriais/${result.tutorial.id}`);
 
   const returnTarget = getReturnTarget(formData, `tutorial:${result.tutorial.id}`);
 
@@ -183,7 +184,7 @@ export async function updateTutorialAction(formData) {
   }
 
   revalidatePath("/tutoriais");
-  revalidatePath(`/tutoriais/${result.tutorial.id}`);
+  revalidatePath(result.tutorial?.url || `/tutoriais/${result.tutorial.id}`);
   redirect(`/admin?area=tutorials&action=edit&item=${encodeURIComponent(result.tutorial.id)}&tutorialUpdated=${encodeURIComponent(result.tutorial.id)}`);
 }
 

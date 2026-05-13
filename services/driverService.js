@@ -1,26 +1,28 @@
-import { drivers } from "@/data/drivers";
+import { getDriversData } from "@/services/dataRepository";
 import { getPublicFileStatus } from "@/services/fileService";
 import { guideParamsFromUrl } from "@/utils/routes";
 import { sortDrivers, uniqueSorted } from "@/utils/search";
 
-export function getDrivers() {
-  return drivers.map(withDriverAvailability).sort(sortDrivers);
+const thermalPrinterCategory = "Impressora termica";
+
+export async function getDrivers() {
+  return (await getDriversData()).map(withDriverAvailability).sort(sortDrivers);
 }
 
-export function getFeaturedDrivers() {
-  return getDrivers().filter((driver) => driver.destaque);
+export async function getFeaturedDrivers() {
+  return (await getDrivers()).filter((driver) => driver.destaque);
 }
 
-export function getDriverBrands() {
-  return uniqueSorted(drivers.map((driver) => driver.marca));
+export async function getDriverBrands() {
+  return uniqueSorted((await getDriversData()).map((driver) => driver.marca));
 }
 
-export function getDriverCategories() {
-  return uniqueSorted(drivers.map((driver) => driver.categoria));
+export async function getDriverCategories() {
+  return uniqueSorted((await getDrivers()).map((driver) => driver.categoria));
 }
 
-export function getDriversByBrand() {
-  return getDrivers().reduce((groups, driver) => {
+export async function getDriversByBrand() {
+  return (await getDrivers()).reduce((groups, driver) => {
     const brand = driver.marca;
     groups[brand] = groups[brand] || [];
     groups[brand].push(driver);
@@ -28,18 +30,18 @@ export function getDriversByBrand() {
   }, {});
 }
 
-export function getGuideDrivers() {
-  return getDrivers().filter((driver) => driver.guiaInstalacao?.url);
+export async function getGuideDrivers() {
+  return (await getDrivers()).filter((driver) => driver.guiaInstalacao?.url);
 }
 
-export function getDriverByGuideParams(marca, modelo) {
+export async function getDriverByGuideParams(marca, modelo) {
   const targetUrl = `/guias/${marca}/${modelo}`;
 
-  return getDrivers().find((driver) => driver.guiaInstalacao?.url === targetUrl);
+  return (await getDrivers()).find((driver) => driver.guiaInstalacao?.url === targetUrl);
 }
 
-export function getGuideStaticParams() {
-  return drivers
+export async function getGuideStaticParams() {
+  return (await getDriversData())
     .map((driver) => guideParamsFromUrl(driver.guiaInstalacao?.url))
     .filter(Boolean);
 }
@@ -53,6 +55,7 @@ function withDriverAvailability(driver) {
 
   return {
     ...driver,
+    categoria: thermalPrinterCategory,
     arquivo,
     driver: {
       ...driver.driver,

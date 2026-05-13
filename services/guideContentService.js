@@ -1,36 +1,47 @@
-import { guides } from "@/data/guides";
-import { internalApps } from "@/data/apps";
-import { drivers } from "@/data/drivers";
+import { getAppsData, getDriversData, getGuidesData } from "@/services/dataRepository";
 import { getDrivers } from "@/services/driverService";
 import { buildInstallationGuide } from "@/services/guideService";
 import { guideParamsFromUrl } from "@/utils/routes";
 import { normalizeText, tokenize, uniqueSorted } from "@/utils/search";
 import { slugify } from "@/utils/slug";
 
-export function getGuideRecords() {
-  const manualGuides = guides.map(normalizeManualGuide);
+export async function getGuideRecords() {
+  const drivers = await getDriversData();
+  const apps = await getAppsData();
+  const manualGuides = (await getGuidesData()).map((guide) => normalizeManualGuide(guide, drivers, apps));
   const manualUrls = new Set(manualGuides.map((guide) => guide.url));
-  const generatedGuides = getDrivers()
+  const generatedGuides = (await getDrivers())
     .filter((driver) => driver.guiaInstalacao?.url && !manualUrls.has(driver.guiaInstalacao.url))
     .map((driver) => normalizeGeneratedGuide(driver));
 
   return [...manualGuides, ...generatedGuides].sort((a, b) => a.titulo.localeCompare(b.titulo, "pt-BR"));
 }
 
-export function getGuideRecordByParams(marca, modelo) {
+export async function getGuideRecordByParams(marca, modelo) {
   const targetUrl = `/guias/${marca}/${modelo}`;
+  const marcaSlug = slugify(marca);
+  const modeloSlug = slugify(modelo);
 
-  return getGuideRecords().find((guide) => guide.url === targetUrl);
+  return (await getGuideRecords()).find((guide) => {
+    return (
+      guide.url === targetUrl ||
+      (slugify(guide.marca) === marcaSlug && slugify(guide.modelo) === modeloSlug)
+    );
+  });
 }
 
-export function getGuideStaticParams() {
-  return getGuideRecords()
+export async function getGuideRecordBySlug(slug) {
+  return (await getGuideRecords()).find((guide) => guide.slug === slug || guide.url === `/guias/${slug}`);
+}
+
+export async function getGuideStaticParams() {
+  return (await getGuideRecords())
     .map((guide) => guideParamsFromUrl(guide.url))
     .filter(Boolean);
 }
 
-export function getGuideCategories() {
-  return uniqueSorted(getGuideRecords().map((guide) => guide.categoria));
+export async function getGuideCategories() {
+  return uniqueSorted((await getGuideRecords()).map((guide) => guide.categoria));
 }
 
 export function searchGuidesInMemory(records, query) {
@@ -101,12 +112,12 @@ export function buildGuideDetail(guide) {
   };
 }
 
-function normalizeManualGuide(guide) {
-  const driver = drivers.find((item) => item.id === guide.driverRelacionadoId);
-  const app = internalApps.find((item) => item.id === guide.aplicativoRelacionadoId);
+function normalizeManualGuide(guide, drivers, internalApps) {
+  const driver = drivers.find((item) => item.id === guide.driverRelacionadoId || item.guiaVinculado?.id === guide.id);
+  const app = internalApps.find((item) => item.id === guide.aplicativoRelacionadoId || item.guiaVinculado?.id === guide.id);
   const marcaSlug = slugify(guide.marca || driver?.marca || "geral");
   const modeloSlug = slugify(guide.modelo || guide.titulo);
-  const url = driver?.guiaInstalacao?.url || `/guias/${marcaSlug}/${modeloSlug}`;
+  const url = guide.url || driver?.guiaInstalacao?.url || `/guias/${marcaSlug}/${modeloSlug}`;
 
   return {
     ...guide,

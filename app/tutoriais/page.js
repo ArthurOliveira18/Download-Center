@@ -2,13 +2,15 @@ import { TutorialSearchPanel } from "@/components/tutorials/TutorialSearchPanel"
 import { getTutorials } from "@/services/tutorialContentService";
 import styles from "../sectionPages.module.css";
 
+export const dynamic = "force-dynamic";
+
 export const metadata = {
   title: "Tutoriais",
   description: "Tutoriais gerais de rede, USB, Ethernet, IP, drivers e erros comuns de impressora."
 };
 
-export default function TutorialsPage() {
-  const tutorials = getTutorials();
+export default async function TutorialsPage() {
+  const tutorials = await getTutorials();
 
   return (
     <div className={styles.page}>

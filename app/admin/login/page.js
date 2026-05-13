@@ -18,7 +18,7 @@ export default async function AdminLoginPage({ searchParams }) {
 
   const errorMessage =
     params?.error === "config"
-      ? "Configure ADMIN_USERNAME, ADMIN_PASSWORD e AUTH_SECRET no .env.local."
+      ? "Configure ADMIN_USER, ADMIN_PASSWORD e SESSION_SECRET no ambiente do servidor."
       : params?.error === "invalid"
         ? "Usuario ou senha invalidos."
         : "";

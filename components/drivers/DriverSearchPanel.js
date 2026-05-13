@@ -9,9 +9,9 @@ import styles from "./DriverSearchPanel.module.css";
 
 export function DriverSearchPanel({
   drivers,
-  title = "Encontre o driver certo",
-  description = "Pesquise por marca, modelo, categoria, palavra-chave ou nome do driver.",
-  placeholder = "Buscar por Bematech, 4200, driver Epson, impressora fiscal...",
+  title = "Encontre o driver termico certo",
+  description = "Pesquise por marca, modelo, palavra-chave ou nome do driver.",
+  placeholder = "Buscar por Bematech, 4200, Epson, Elgin, impressora termica...",
   showFilters = true,
   limitWhenIdle,
   autoFocus = false
@@ -64,15 +64,17 @@ export function DriverSearchPanel({
             </select>
           </label>
 
-          <label>
-            <span>Categoria</span>
-            <select value={category} onChange={(event) => setCategory(event.target.value)}>
-              <option>Todas</option>
-              {categories.map((item) => (
-                <option key={item}>{item}</option>
-              ))}
-            </select>
-          </label>
+          {categories.length > 1 ? (
+            <label>
+              <span>Tipo</span>
+              <select value={category} onChange={(event) => setCategory(event.target.value)}>
+                <option>Todas</option>
+                {categories.map((item) => (
+                  <option key={item}>{item}</option>
+                ))}
+              </select>
+            </label>
+          ) : null}
         </div>
       ) : null}
 
@@ -88,7 +90,7 @@ export function DriverSearchPanel({
 
       {!isSearching && visibleResults.length === 0 ? (
         <EmptyState
-          description="Tente buscar por marca, modelo, categoria, termo parcial ou palavra-chave cadastrada no array."
+          description="Tente buscar por marca, modelo, termo parcial ou palavra-chave cadastrada."
         />
       ) : null}
     </section>

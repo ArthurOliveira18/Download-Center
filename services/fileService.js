@@ -2,6 +2,14 @@ import fs from "node:fs";
 import path from "node:path";
 
 export function getPublicFileStatus(downloadUrl) {
+  if (downloadUrl?.startsWith("/api/files/")) {
+    return {
+      checked: false,
+      exists: true,
+      publicPath: downloadUrl
+    };
+  }
+
   if (!downloadUrl || !downloadUrl.startsWith("/")) {
     return {
       checked: false,

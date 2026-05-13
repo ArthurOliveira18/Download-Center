@@ -2,13 +2,15 @@ import { GuideSearchPanel } from "@/components/guides/GuideSearchPanel";
 import { getGuideRecords } from "@/services/guideContentService";
 import styles from "../sectionPages.module.css";
 
+export const dynamic = "force-dynamic";
+
 export const metadata = {
   title: "Guias de instalacao",
   description: "Guias de instalacao separados por fabricante e modelo."
 };
 
-export default function GuidesPage() {
-  const guides = getGuideRecords();
+export default async function GuidesPage() {
+  const guides = await getGuideRecords();
 
   return (
     <div className={styles.page}>

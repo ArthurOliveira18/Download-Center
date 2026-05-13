@@ -5,20 +5,22 @@ import { CategoryCards } from "@/components/home/CategoryCards";
 import { getDriverCategories, getDrivers, getFeaturedDrivers } from "@/services/driverService";
 import styles from "./page.module.css";
 
-export default function HomePage() {
-  const drivers = getDrivers();
-  const featuredDrivers = getFeaturedDrivers();
-  const categories = getDriverCategories();
+export const dynamic = "force-dynamic";
+
+export default async function HomePage() {
+  const drivers = await getDrivers();
+  const featuredDrivers = await getFeaturedDrivers();
+  const categories = await getDriverCategories();
 
   return (
     <div className={styles.page}>
       <section className={styles.hero}>
         <div className={styles.heroCopy}>
-          <span className={styles.eyebrow}>Drivers e utilitarios</span>
+          <span className={styles.eyebrow}>Drivers de impressoras termicas</span>
           <h1>Download Center TAKEAT</h1>
           <p>
-            Pesquise drivers, guias, aplicativos internos e tutoriais com uma estrutura simples de
-            manter e pronta para crescer.
+            Pesquise drivers para impressoras termicas, guias, aplicativos internos e tutoriais
+            com uma estrutura simples de manter e pronta para crescer.
           </p>
 
           <div className={styles.heroActions}>
@@ -36,7 +38,7 @@ export default function HomePage() {
         <div className={styles.heroPanel}>
           <div className={styles.panelTop}>
             <strong>{drivers.length}</strong>
-            <span>itens cadastrados</span>
+            <span>drivers termicos cadastrados</span>
           </div>
           <div className={styles.panelLine} />
           <div className={styles.panelRows}>

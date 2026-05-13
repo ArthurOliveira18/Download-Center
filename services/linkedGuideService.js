@@ -1,16 +1,17 @@
-import { guides } from "@/data/guides";
-import { drivers } from "@/data/drivers";
-import { tutorials } from "@/data/tutorials";
+import { getDriversData, getGuidesData, getTutorialsData } from "@/services/dataRepository";
 import { slugify } from "@/utils/slug";
 
-export function getLinkedGuideOptions() {
+export async function getLinkedGuideOptions() {
+  const guides = await getGuidesData();
+  const tutorials = await getTutorialsData();
+  const drivers = await getDriversData();
   const guideOptions = guides.map((guide) => ({
     type: "guide",
     id: guide.id,
     value: `guide:${guide.id}`,
     label: `Guia: ${guide.titulo}`,
     titulo: guide.titulo,
-    url: getManualGuideUrl(guide)
+    url: getManualGuideUrl(guide, drivers)
   }));
 
   const tutorialOptions = tutorials.map((tutorial) => ({
@@ -25,7 +26,7 @@ export function getLinkedGuideOptions() {
   return [...guideOptions, ...tutorialOptions].sort((a, b) => a.label.localeCompare(b.label, "pt-BR"));
 }
 
-export function getLinkedGuideValueForResource(resource) {
+export function getLinkedGuideValueForResource(resource, guideOptions = []) {
   const directValue = getLinkedGuideValue(resource?.guiaVinculado);
 
   if (directValue) {
@@ -38,17 +39,17 @@ export function getLinkedGuideValueForResource(resource) {
     return "";
   }
 
-  return getLinkedGuideOptions().find((option) => option.url === guideUrl)?.value || "";
+  return guideOptions.find((option) => option.url === guideUrl)?.value || "";
 }
 
-export function resolveLinkedGuideFromForm(formData) {
+export async function resolveLinkedGuideFromForm(formData) {
   const value = String(formData.get("guiaVinculado") || "").trim();
 
   if (!value) {
     return { ok: true, guide: null };
   }
 
-  const option = getLinkedGuideOptions().find((item) => item.value === value);
+  const option = (await getLinkedGuideOptions()).find((item) => item.value === value);
 
   if (!option) {
     return { ok: false, error: "Guia ou tutorial vinculado nao encontrado." };
@@ -73,7 +74,11 @@ export function getLinkedGuideValue(guide) {
   return `${guide.type}:${guide.id}`;
 }
 
-function getManualGuideUrl(guide) {
+function getManualGuideUrl(guide, drivers) {
+  if (guide.url) {
+    return guide.url;
+  }
+
   const relatedDriver = drivers.find((driver) => driver.id === guide.driverRelacionadoId);
   const marcaSlug = slugify(guide.marca || relatedDriver?.marca || "geral");
   const modeloSlug = slugify(guide.modelo || guide.titulo);
