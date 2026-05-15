@@ -79,11 +79,15 @@ export async function updateSupabaseDriver(id, driver) {
   return mapSupabaseDriverToAppDriver(data);
 }
 
-export async function deleteSupabaseDriver() {
-  return {
-    ok: false,
-    error: "Drivers nao podem ser excluidos."
-  };
+export async function deleteSupabaseDriver(id) {
+  const supabase = getSupabaseAdminClient();
+  const { error } = await supabase
+    .from("drivers")
+    .delete()
+    .eq("id", id);
+
+  assertSupabaseSuccess(error);
+  return true;
 }
 
 function assertSupabaseSuccess(error) {

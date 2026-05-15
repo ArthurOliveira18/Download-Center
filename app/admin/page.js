@@ -18,6 +18,7 @@ import {
 } from "lucide-react";
 import { DynamicListField } from "@/components/admin/DynamicListField";
 import { MultiDeleteForm } from "@/components/admin/MultiDeleteForm";
+import { ToastMessages } from "@/components/admin/ToastMessages";
 import { getCurrentAdmin } from "@/lib/auth/server";
 import { getInternalApps } from "@/services/appService";
 import { getGuidesData } from "@/services/dataRepository";
@@ -29,7 +30,9 @@ import {
   createGuideAction,
   createInternalAppAction,
   createTutorialAction,
+  deleteDriversAction,
   deleteGuidesAction,
+  deleteInternalAppsAction,
   deleteTutorialsAction,
   logoutAction,
   updateDriverAction,
@@ -45,25 +48,25 @@ const adminAreas = {
   drivers: {
     title: "Gerenciar drivers de impressoras termicas",
     shortTitle: "Drivers",
-    description: "Cadastre drivers para impressoras termicas e edite somente informacoes basicas. Arquivos existentes ficam protegidos.",
+    description: "Cadastre, edite e exclua drivers de impressoras termicas. Arquivos existentes ficam protegidos na edicao.",
     icon: DownloadCloud
   },
   apps: {
     title: "Gerenciar Aplicativos Internos",
     shortTitle: "Aplicativos internos",
-    description: "Organize aplicativos internos sem apagar ou substituir instaladores ja cadastrados.",
+    description: "Organize, edite e exclua aplicativos internos. Instaladores ja cadastrados ficam protegidos na edicao.",
     icon: AppWindow
   },
   guides: {
     title: "Gerenciar Guias",
     shortTitle: "Guias",
-    description: "Crie, edite, revise e exclua guias de instalacao.",
+    description: "Crie, edite, visualize e exclua guias de instalacao.",
     icon: BookOpen
   },
   tutorials: {
     title: "Gerenciar Tutoriais",
     shortTitle: "Tutoriais",
-    description: "Crie, edite, revise e exclua tutoriais gerais.",
+    description: "Crie, edite, visualize e exclua tutoriais gerais.",
     icon: GraduationCap
   }
 };
@@ -201,13 +204,14 @@ function DriversArea({ action, drivers, guideOptions, linkedGuideValue, selected
           title="Escolha como deseja gerenciar os drivers termicos"
         />
         <p className={styles.sectionNote}>
-          Drivers de impressoras termicas nao podem ser excluidos. Na edicao, o arquivo real nao aparece como campo e nao pode ser trocado.
+          A exclusao sempre pede confirmacao antes de remover o driver. Na edicao, o arquivo do driver nao pode ser trocado.
         </p>
         <ActionCards
           actions={[
             { href: "/admin?area=drivers&action=create", icon: PlusCircle, label: "Adicionar driver termico" },
             { href: "/admin?area=drivers&action=edit", icon: Pencil, label: "Editar driver" },
-            { href: "/admin?area=drivers&action=review", icon: Eye, label: "Revisar driver", secondary: true }
+            { href: "/admin?area=drivers&action=review", icon: Eye, label: "Ver driver", secondary: true },
+            { href: "/admin?area=drivers&action=delete", icon: Trash2, label: "Excluir drivers", danger: true }
           ]}
         />
         <ResourceGrid
@@ -228,7 +232,7 @@ function DriversArea({ action, drivers, guideOptions, linkedGuideValue, selected
       ) : null}
 
       {action === "edit" && !selectedDriver ? (
-        <AdminModal closeHref={closeHref} eyebrow="Selecao do item" icon={ListChecks} title="Qual driver deseja editar?">
+        <AdminModal closeHref={closeHref} eyebrow="Escolha do item" icon={ListChecks} title="Qual driver deseja editar?">
           <SelectItemForm
             action="edit"
             area="drivers"
@@ -241,7 +245,7 @@ function DriversArea({ action, drivers, guideOptions, linkedGuideValue, selected
       ) : null}
 
       {action === "review" && !selectedDriver ? (
-        <AdminModal closeHref={closeHref} eyebrow="Selecao do item" icon={ListChecks} title="Qual driver deseja revisar?">
+        <AdminModal closeHref={closeHref} eyebrow="Escolha do item" icon={ListChecks} title="Qual driver deseja ver?">
           <SelectItemForm
             action="review"
             area="drivers"
@@ -254,14 +258,30 @@ function DriversArea({ action, drivers, guideOptions, linkedGuideValue, selected
       ) : null}
 
       {action === "edit" && selectedDriver ? (
-        <AdminModal closeHref={closeHref} eyebrow="Editar dados permitidos" icon={ShieldCheck} title={`${selectedDriver.marca} ${selectedDriver.modelo}`}>
+        <AdminModal closeHref={closeHref} eyebrow="Editar informacoes" icon={ShieldCheck} title={`${selectedDriver.marca} ${selectedDriver.modelo}`}>
           <DriverEditForm driver={selectedDriver} guideOptions={guideOptions} linkedGuideValue={linkedGuideValue} />
         </AdminModal>
       ) : null}
 
       {action === "review" && selectedDriver ? (
-        <AdminModal closeHref={closeHref} eyebrow="Revisar driver" icon={Eye} title={`${selectedDriver.marca} ${selectedDriver.modelo}`}>
+        <AdminModal closeHref={closeHref} eyebrow="Ver driver" icon={Eye} title={`${selectedDriver.marca} ${selectedDriver.modelo}`}>
           <ReviewPanel content={selectedDriver} type="driver" />
+        </AdminModal>
+      ) : null}
+
+      {action === "delete" ? (
+        <AdminModal closeHref={closeHref} eyebrow="Confirmar exclusao" icon={Trash2} title="Excluir drivers">
+          <MultiDeleteForm
+            action={deleteDriversAction}
+            cancelHref={closeHref}
+            emptyMessage="Nenhum driver disponivel para excluir."
+            items={drivers.map((driver) => ({
+              id: driver.id,
+              title: `${driver.marca} ${driver.modelo}`,
+              description: driver.driver?.nome || driver.categoria
+            }))}
+            noun="driver"
+          />
         </AdminModal>
       ) : null}
     </>
@@ -283,13 +303,14 @@ function AppsArea({ action, apps, guideOptions, linkedGuideValue, selectedId }) 
           title="Escolha como deseja gerenciar os aplicativos"
         />
         <p className={styles.sectionNote}>
-          Aplicativos internos nao podem ser excluidos. Os instaladores cadastrados ficam protegidos.
+          A exclusao sempre pede confirmacao antes de remover o aplicativo. Os instaladores cadastrados ficam protegidos na edicao.
         </p>
         <ActionCards
           actions={[
             { href: "/admin?area=apps&action=create", icon: PlusCircle, label: "Adicionar aplicativo" },
             { href: "/admin?area=apps&action=edit", icon: Pencil, label: "Editar aplicativo" },
-            { href: "/admin?area=apps&action=review", icon: Eye, label: "Revisar aplicativo", secondary: true }
+            { href: "/admin?area=apps&action=review", icon: Eye, label: "Ver aplicativo", secondary: true },
+            { href: "/admin?area=apps&action=delete", icon: Trash2, label: "Excluir aplicativos", danger: true }
           ]}
         />
         <ResourceGrid
@@ -310,7 +331,7 @@ function AppsArea({ action, apps, guideOptions, linkedGuideValue, selectedId }) 
       ) : null}
 
       {action === "edit" && !selectedApp ? (
-        <AdminModal closeHref={closeHref} eyebrow="Selecao do item" icon={ListChecks} title="Qual aplicativo deseja editar?">
+        <AdminModal closeHref={closeHref} eyebrow="Escolha do item" icon={ListChecks} title="Qual aplicativo deseja editar?">
           <SelectItemForm
             action="edit"
             area="apps"
@@ -320,7 +341,7 @@ function AppsArea({ action, apps, guideOptions, linkedGuideValue, selectedId }) 
       ) : null}
 
       {action === "review" && !selectedApp ? (
-        <AdminModal closeHref={closeHref} eyebrow="Selecao do item" icon={ListChecks} title="Qual aplicativo deseja revisar?">
+        <AdminModal closeHref={closeHref} eyebrow="Escolha do item" icon={ListChecks} title="Qual aplicativo deseja ver?">
           <SelectItemForm
             action="review"
             area="apps"
@@ -330,14 +351,30 @@ function AppsArea({ action, apps, guideOptions, linkedGuideValue, selectedId }) 
       ) : null}
 
       {action === "edit" && selectedApp ? (
-        <AdminModal closeHref={closeHref} eyebrow="Editar dados permitidos" icon={ShieldCheck} title={selectedApp.nome}>
+        <AdminModal closeHref={closeHref} eyebrow="Editar informacoes" icon={ShieldCheck} title={selectedApp.nome}>
           <AppEditForm app={selectedApp} guideOptions={guideOptions} linkedGuideValue={linkedGuideValue} />
         </AdminModal>
       ) : null}
 
       {action === "review" && selectedApp ? (
-        <AdminModal closeHref={closeHref} eyebrow="Revisar aplicativo" icon={Eye} title={selectedApp.nome}>
+        <AdminModal closeHref={closeHref} eyebrow="Ver aplicativo" icon={Eye} title={selectedApp.nome}>
           <ReviewPanel content={selectedApp} type="app" />
+        </AdminModal>
+      ) : null}
+
+      {action === "delete" ? (
+        <AdminModal closeHref={closeHref} eyebrow="Confirmar exclusao" icon={Trash2} title="Excluir aplicativos internos">
+          <MultiDeleteForm
+            action={deleteInternalAppsAction}
+            cancelHref={closeHref}
+            emptyMessage="Nenhum aplicativo disponivel para excluir."
+            items={apps.map((app) => ({
+              id: app.id,
+              title: app.nome,
+              description: app.categoria
+            }))}
+            noun="aplicativo"
+          />
         </AdminModal>
       ) : null}
     </>
@@ -358,7 +395,7 @@ function GuidesArea({ action, apps, drivers, guides, returnContext, selectedId }
           actions={[
             { href: "/admin?area=guides&action=create", icon: PlusCircle, label: "Criar guia" },
             { href: "/admin?area=guides&action=edit", icon: Pencil, label: "Editar guia" },
-            { href: "/admin?area=guides&action=review", icon: Eye, label: "Revisar guia", secondary: true },
+            { href: "/admin?area=guides&action=review", icon: Eye, label: "Ver guia", secondary: true },
             { href: "/admin?area=guides&action=delete", icon: Trash2, label: "Excluir guias", danger: true }
           ]}
         />
@@ -380,7 +417,7 @@ function GuidesArea({ action, apps, drivers, guides, returnContext, selectedId }
       ) : null}
 
       {["edit", "review"].includes(action) && !selectedGuide ? (
-        <AdminModal closeHref={closeHref} eyebrow="Selecao do item" icon={ListChecks} title={`Qual guia deseja ${getActionVerb(action)}?`}>
+        <AdminModal closeHref={closeHref} eyebrow="Escolha do item" icon={ListChecks} title={`Qual guia deseja ${getActionVerb(action)}?`}>
           <SelectItemForm
             action={action}
             area="guides"
@@ -390,7 +427,7 @@ function GuidesArea({ action, apps, drivers, guides, returnContext, selectedId }
       ) : null}
 
       {action === "delete" ? (
-        <AdminModal closeHref={closeHref} eyebrow="Exclusao com selecao" icon={Trash2} title="Excluir guias">
+        <AdminModal closeHref={closeHref} eyebrow="Confirmar exclusao" icon={Trash2} title="Excluir guias">
           <MultiDeleteForm
             action={deleteGuidesAction}
             cancelHref={closeHref}
@@ -418,7 +455,7 @@ function GuidesArea({ action, apps, drivers, guides, returnContext, selectedId }
       ) : null}
 
       {action === "review" && selectedGuide ? (
-        <AdminModal closeHref={closeHref} eyebrow="Revisar guia" icon={Eye} title={selectedGuide.titulo}>
+        <AdminModal closeHref={closeHref} eyebrow="Ver guia" icon={Eye} title={selectedGuide.titulo}>
           <ReviewPanel content={selectedGuide} type="guide" />
         </AdminModal>
       ) : null}
@@ -441,7 +478,7 @@ function TutorialsArea({ action, returnContext, selectedId, tutorials }) {
           actions={[
             { href: "/admin?area=tutorials&action=create", icon: PlusCircle, label: "Criar tutorial" },
             { href: "/admin?area=tutorials&action=edit", icon: Pencil, label: "Editar tutorial" },
-            { href: "/admin?area=tutorials&action=review", icon: Eye, label: "Revisar tutorial", secondary: true },
+            { href: "/admin?area=tutorials&action=review", icon: Eye, label: "Ver tutorial", secondary: true },
             { href: "/admin?area=tutorials&action=delete", icon: Trash2, label: "Excluir tutoriais", danger: true }
           ]}
         />
@@ -463,7 +500,7 @@ function TutorialsArea({ action, returnContext, selectedId, tutorials }) {
       ) : null}
 
       {["edit", "review"].includes(action) && !selectedTutorial ? (
-        <AdminModal closeHref={closeHref} eyebrow="Selecao do item" icon={ListChecks} title={`Qual tutorial deseja ${getActionVerb(action)}?`}>
+        <AdminModal closeHref={closeHref} eyebrow="Escolha do item" icon={ListChecks} title={`Qual tutorial deseja ${getActionVerb(action)}?`}>
           <SelectItemForm
             action={action}
             area="tutorials"
@@ -473,7 +510,7 @@ function TutorialsArea({ action, returnContext, selectedId, tutorials }) {
       ) : null}
 
       {action === "delete" ? (
-        <AdminModal closeHref={closeHref} eyebrow="Exclusao com selecao" icon={Trash2} title="Excluir tutoriais">
+        <AdminModal closeHref={closeHref} eyebrow="Confirmar exclusao" icon={Trash2} title="Excluir tutoriais">
           <MultiDeleteForm
             action={deleteTutorialsAction}
             cancelHref={closeHref}
@@ -499,7 +536,7 @@ function TutorialsArea({ action, returnContext, selectedId, tutorials }) {
       ) : null}
 
       {action === "review" && selectedTutorial ? (
-        <AdminModal closeHref={closeHref} eyebrow="Revisar tutorial" icon={Eye} title={selectedTutorial.titulo}>
+        <AdminModal closeHref={closeHref} eyebrow="Ver tutorial" icon={Eye} title={selectedTutorial.titulo}>
           <ReviewPanel content={selectedTutorial} type="tutorial" />
         </AdminModal>
       ) : null}
@@ -575,8 +612,8 @@ function ResourceGrid({ items }) {
           <h3>{item.title}</h3>
           <p>{item.description}</p>
           <div className={styles.itemMeta}>
-            {item.meta.map((meta) => (
-              <span key={meta}>{meta}</span>
+            {item.meta.map((meta, index) => (
+              <span key={`${item.id}-${meta}-${index}`}>{meta}</span>
             ))}
           </div>
         </article>
@@ -610,7 +647,7 @@ function SelectItemForm({ action, area, items }) {
 
 function DriverCreateForm({ guideOptions, linkedGuideValue }) {
   return (
-    <form action={createDriverAction} className={styles.formGrid} encType="multipart/form-data">
+    <form action={createDriverAction} className={styles.formGrid}>
       <label className={styles.field}>
         <span>Nome do driver/impressora</span>
         <input name="driverName" placeholder="Driver Oficial Windows" required />
@@ -636,7 +673,7 @@ function DriverCreateForm({ guideOptions, linkedGuideValue }) {
         <input name="compatibilidade" placeholder="Windows 11, Windows 10 64-bit" />
       </label>
       <label className={styles.wideField}>
-        <span>Metadados (opcional)</span>
+        <span>Palavras-chave para busca (opcional)</span>
         <input name="keywords" placeholder="4200, termica, usb, driver" />
       </label>
       <label className={styles.wideField}>
@@ -683,7 +720,7 @@ function DriverEditForm({ driver, guideOptions, linkedGuideValue }) {
         <textarea name="observacoes" defaultValue={(driver.observacoes || []).join("\n")} />
       </label>
       <label className={styles.wideField}>
-        <span>Metadados (opcional)</span>
+        <span>Termos que ajudam na pesquisa (opcional)</span>
         <textarea
           name="metadados"
           defaultValue={driver.metadados || (driver.keywords || []).join(", ")}
@@ -706,7 +743,7 @@ function DriverEditForm({ driver, guideOptions, linkedGuideValue }) {
 
 function AppCreateForm({ guideOptions, linkedGuideValue }) {
   return (
-    <form action={createInternalAppAction} className={styles.formGrid} encType="multipart/form-data">
+    <form action={createInternalAppAction} className={styles.formGrid}>
       <label className={styles.field}>
         <span>Nome</span>
         <input name="nome" placeholder="TAKEAT Printer" required />
@@ -732,7 +769,7 @@ function AppCreateForm({ guideOptions, linkedGuideValue }) {
         <textarea name="observacoes" />
       </label>
       <label className={styles.wideField}>
-        <span>Metadados (opcional)</span>
+        <span>Palavras-chave para busca (opcional)</span>
         <textarea name="metadados" placeholder="Palavras-chave, uso interno, requisitos, contexto de suporte" />
       </label>
       <LinkedGuideField
@@ -780,7 +817,7 @@ function AppEditForm({ app, guideOptions, linkedGuideValue }) {
         <textarea name="observacoes" defaultValue={(app.observacoes || []).join("\n")} />
       </label>
       <label className={styles.wideField}>
-        <span>Metadados (opcional)</span>
+        <span>Termos que ajudam na pesquisa (opcional)</span>
         <textarea
           name="metadados"
           defaultValue={app.metadados || (app.keywords || []).join(", ")}
@@ -981,8 +1018,8 @@ function ReviewPanel({ compact = false, content, type }) {
   return (
     <div className={compact ? styles.reviewEmbedded : styles.reviewContent}>
       <dl className={styles.reviewGrid}>
-        {details.stats.map((stat) => (
-          <div key={stat.label}>
+        {details.stats.map((stat, index) => (
+          <div key={`${stat.label}-${index}`}>
             <dt>{stat.label}</dt>
             <dd>{stat.value}</dd>
           </div>
@@ -1012,13 +1049,13 @@ function getReviewDetails(content, type) {
       file: `Arquivo protegido: ${content.driver?.downloadUrl || "sem arquivo vinculado"}`,
       editHref: `/admin?area=drivers&action=edit&item=${content.id}`,
       stats: [
-        { label: "Tipo", value: "Driver" },
-        { label: "Tipo", value: "Impressora termica" },
+        { label: "Item", value: "Driver" },
+        { label: "Categoria", value: "Impressora termica" },
         { label: "Versao", value: content.driver?.versao || "Sem versao" },
         { label: "Guia vinculado", value: content.guiaVinculado?.titulo || content.guiaInstalacao?.titulo || "Nao informado" },
         { label: "Compatibilidade", value: (content.compatibilidade || []).length || "Nao informada" },
         { label: "Observacoes", value: (content.observacoes || []).length },
-        { label: "Metadados", value: (content.keywords || []).length }
+        { label: "Palavras-chave", value: (content.keywords || []).length }
       ]
     };
   }
@@ -1036,7 +1073,7 @@ function getReviewDetails(content, type) {
         { label: "Status", value: content.status || "Disponivel" },
         { label: "Guia vinculado", value: content.guiaVinculado?.titulo || "Nao informado" },
         { label: "Observacoes", value: (content.observacoes || []).length },
-        { label: "Metadados", value: (content.keywords || []).length }
+        { label: "Palavras-chave", value: (content.keywords || []).length }
       ]
     };
   }
@@ -1053,40 +1090,46 @@ function getReviewDetails(content, type) {
       { label: "Passos", value: (content.passos || []).length },
       { label: "Erros comuns", value: (content.errosComuns || []).length },
       { label: "Observacoes", value: (content.observacoes || []).length },
-      { label: "Metadados", value: (content.keywords || content.tags || []).length }
+      { label: "Palavras-chave", value: (content.keywords || content.tags || []).length }
     ]
   };
 }
 
 function AdminMessages({ params }) {
   const messages = [
-    getParam(params, "created") ? `Driver cadastrado com sucesso: ${getParam(params, "created")}` : "",
-    getParam(params, "updated") ? `Driver atualizado com sucesso: ${getParam(params, "updated")}` : "",
-    getParam(params, "appCreated") ? `Aplicativo cadastrado com sucesso: ${getParam(params, "appCreated")}` : "",
-    getParam(params, "appUpdated") ? `Aplicativo atualizado com sucesso: ${getParam(params, "appUpdated")}` : "",
-    getParam(params, "guideCreated") ? `Guia criado com sucesso: ${getParam(params, "guideCreated")}` : "",
-    getParam(params, "guideUpdated") ? `Guia atualizado com sucesso: ${getParam(params, "guideUpdated")}` : "",
-    getParam(params, "guideDeleted") ? `Guia excluido com sucesso: ${getParam(params, "guideDeleted")}` : "",
-    getParam(params, "guidesDeleted") ? `${getParam(params, "guidesDeleted")} guia(s) excluido(s) com sucesso.` : "",
-    getParam(params, "tutorialCreated") ? `Tutorial criado com sucesso: ${getParam(params, "tutorialCreated")}` : "",
-    getParam(params, "tutorialUpdated") ? `Tutorial atualizado com sucesso: ${getParam(params, "tutorialUpdated")}` : "",
-    getParam(params, "tutorialDeleted") ? `Tutorial excluido com sucesso: ${getParam(params, "tutorialDeleted")}` : "",
-    getParam(params, "tutorialsDeleted") ? `${getParam(params, "tutorialsDeleted")} tutorial(is) excluido(s) com sucesso.` : ""
+    getParam(params, "created") ? "Driver cadastrado com sucesso." : "",
+    getParam(params, "updated") ? "Driver atualizado com sucesso." : "",
+    getParam(params, "driversDeleted") ? buildDeleteMessage(getParam(params, "driversDeleted"), "Driver", "drivers") : "",
+    getParam(params, "appCreated") ? "Aplicativo interno cadastrado com sucesso." : "",
+    getParam(params, "appUpdated") ? "Aplicativo interno atualizado com sucesso." : "",
+    getParam(params, "appsDeleted") ? buildDeleteMessage(getParam(params, "appsDeleted"), "Aplicativo interno", "aplicativos internos") : "",
+    getParam(params, "guideCreated") ? "Guia criado com sucesso." : "",
+    getParam(params, "guideUpdated") ? "Guia atualizado com sucesso." : "",
+    getParam(params, "guideDeleted") ? "Guia excluido com sucesso." : "",
+    getParam(params, "guidesDeleted") ? buildDeleteMessage(getParam(params, "guidesDeleted"), "Guia", "guias") : "",
+    getParam(params, "tutorialCreated") ? "Tutorial criado com sucesso." : "",
+    getParam(params, "tutorialUpdated") ? "Tutorial atualizado com sucesso." : "",
+    getParam(params, "tutorialDeleted") ? "Tutorial excluido com sucesso." : "",
+    getParam(params, "tutorialsDeleted") ? buildDeleteMessage(getParam(params, "tutorialsDeleted"), "Tutorial", "tutoriais") : ""
   ].filter(Boolean);
   const error = getParam(params, "error");
 
   return (
     <>
-      {messages.map((message) => (
-        <div className={styles.notice} key={message}>{message}</div>
-      ))}
-      {error ? <div className={styles.error}>{error}</div> : null}
+      <ToastMessages error={error} messages={messages} />
     </>
   );
 }
 
+function buildDeleteMessage(countValue, singular, plural) {
+  const count = Number(countValue) || 1;
+  return count === 1
+    ? `${singular} excluido com sucesso.`
+    : `${count} ${plural} excluidos com sucesso.`;
+}
+
 function getActionVerb(action) {
-  if (action === "review") return "revisar";
+  if (action === "review") return "ver";
   if (action === "delete") return "excluir";
   return "editar";
 }

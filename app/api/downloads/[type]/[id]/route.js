@@ -1,8 +1,8 @@
 import { revalidatePath } from "next/cache";
 import { NextResponse } from "next/server";
 import { methodNotAllowed, requestToFormData, requireAdminApi } from "@/lib/api/request";
-import { updateInternalAppEditableFieldsFromForm } from "@/services/adminAppService";
-import { updateDriverEditableFieldsFromForm } from "@/services/adminDriverService";
+import { deleteInternalAppFromForm, updateInternalAppEditableFieldsFromForm } from "@/services/adminAppService";
+import { deleteDriverFromForm, updateDriverEditableFieldsFromForm } from "@/services/adminDriverService";
 import { getInternalApps } from "@/services/appService";
 import { getDrivers } from "@/services/driverService";
 
@@ -53,8 +53,40 @@ export async function PATCH(request, context) {
   return methodNotAllowed("Tipo de download nao suportado.");
 }
 
-export async function DELETE() {
-  return methodNotAllowed("Drivers e aplicativos internos nao podem ser excluidos.");
+export async function DELETE(_request, context) {
+  const { response } = await requireAdminApi();
+
+  if (response) {
+    return response;
+  }
+
+  const { id, type } = await context.params;
+  const formData = new FormData();
+  formData.set("id", id);
+
+  if (type === "drivers") {
+    const result = await deleteDriverFromForm(formData);
+
+    if (!result.ok) {
+      return NextResponse.json(result, { status: 400 });
+    }
+
+    revalidateDownloadPaths(result.driver?.guiaVinculado?.url || result.driver?.guiaInstalacao?.url);
+    return NextResponse.json(result);
+  }
+
+  if (type === "apps") {
+    const result = await deleteInternalAppFromForm(formData);
+
+    if (!result.ok) {
+      return NextResponse.json(result, { status: 400 });
+    }
+
+    revalidateDownloadPaths(result.app?.guiaVinculado?.url);
+    return NextResponse.json(result);
+  }
+
+  return methodNotAllowed("Tipo de download nao suportado.");
 }
 
 async function getResource(type, id) {

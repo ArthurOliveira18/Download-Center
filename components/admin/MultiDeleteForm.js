@@ -25,8 +25,8 @@ export function MultiDeleteForm({ action, cancelHref, emptyMessage, items, noun 
   return (
     <form action={action} className={styles.form}>
       <div className={styles.summary}>
-        <strong>Confirme a exclusao</strong>
-        <span>{countLabel} Esta acao nao pode ser desfeita.</span>
+        <strong>Tem certeza que deseja excluir este item?</strong>
+        <span>{countLabel} Essa acao nao podera ser desfeita.</span>
       </div>
 
       {items.length ? (
@@ -56,7 +56,7 @@ export function MultiDeleteForm({ action, cancelHref, emptyMessage, items, noun 
       )}
 
       {!selectedCount && items.length ? (
-        <p className={styles.hint}>Selecione pelo menos um item para liberar o botao de exclusao.</p>
+        <p className={styles.hint}>Selecione pelo menos um item para ativar o botao Excluir.</p>
       ) : null}
 
       <div className={styles.actions}>
@@ -65,7 +65,7 @@ export function MultiDeleteForm({ action, cancelHref, emptyMessage, items, noun 
         </Link>
         <button className={styles.danger} disabled={!selectedCount} type="submit">
           <Trash2 size={17} />
-          Excluir selecionados
+          Excluir
         </button>
       </div>
     </form>

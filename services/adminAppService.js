@@ -1,7 +1,7 @@
 import { getAppsData, writeAppsData } from "@/services/dataRepository";
 import { resolveLinkedGuideFromForm } from "@/services/linkedGuideService";
 import { isSupabaseAdminConfigured } from "@/services/supabase/config";
-import { createSupabaseInternalApp, updateSupabaseInternalApp } from "@/services/supabase/internalAppsSupabaseService";
+import { createSupabaseInternalApp, deleteSupabaseInternalApp, updateSupabaseInternalApp } from "@/services/supabase/internalAppsSupabaseService";
 import { uploadDownloadFile } from "@/services/supabase/storageService";
 import { saveInternalAppFile } from "@/services/storage/localDriverStorage";
 import { normalizeText, tokenize } from "@/utils/search";
@@ -150,6 +150,30 @@ export async function updateInternalAppEditableFieldsFromForm(formData) {
     ok: true,
     app: nextApps[appIndex]
   };
+}
+
+export async function deleteInternalAppFromForm(formData) {
+  const internalApps = await getAppsData();
+  const useSupabase = isSupabaseAdminConfigured();
+  const id = getRequiredText(formData, "id", "Aplicativo nao informado.");
+
+  if (id.error) {
+    return { ok: false, error: id.error };
+  }
+
+  const app = internalApps.find((item) => item.id === id.value);
+
+  if (!app) {
+    return { ok: false, error: "Aplicativo nao encontrado." };
+  }
+
+  if (useSupabase) {
+    await deleteSupabaseInternalApp(id.value);
+    return { ok: true, id: id.value, app };
+  }
+
+  await writeApps(internalApps.filter((item) => item.id !== id.value));
+  return { ok: true, id: id.value, app };
 }
 
 async function writeApps(nextApps) {

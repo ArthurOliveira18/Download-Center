@@ -75,11 +75,15 @@ export async function updateSupabaseInternalApp(id, app) {
   return mapSupabaseInternalAppToAppInternalApp(data);
 }
 
-export async function deleteSupabaseInternalApp() {
-  return {
-    ok: false,
-    error: "Aplicativos internos nao podem ser excluidos."
-  };
+export async function deleteSupabaseInternalApp(id) {
+  const supabase = getSupabaseAdminClient();
+  const { error } = await supabase
+    .from("internal_apps")
+    .delete()
+    .eq("id", id);
+
+  assertSupabaseSuccess(error);
+  return true;
 }
 
 function assertSupabaseSuccess(error) {

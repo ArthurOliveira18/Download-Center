@@ -50,8 +50,8 @@ export function SiteHeader() {
   return (
     <header className={styles.header}>
       <div className={styles.inner}>
-        <Link href="/" className={styles.brand} onClick={() => setIsOpen(false)}>
-          <img className={styles.logoImage} src="/IMG/TakeatLogo.avif" alt="Logo" />
+        <Link href="/" className={styles.brand} aria-label="Download Center TAKEAT" onClick={() => setIsOpen(false)}>
+          <img className={styles.logoImage} src="/img/TakeatLogo.avif" alt="TAKEAT" />
         </Link>
 
         <div className={styles.headerActions}>

@@ -5,10 +5,12 @@ import { redirect } from "next/navigation";
 import { getCurrentAdmin, signOutAdmin } from "@/lib/auth/server";
 import {
   createInternalAppFromForm,
+  deleteInternalAppFromForm,
   updateInternalAppEditableFieldsFromForm
 } from "@/services/adminAppService";
 import {
   createDriverFromForm,
+  deleteDriverFromForm,
   updateDriverEditableFieldsFromForm
 } from "@/services/adminDriverService";
 import {
@@ -39,7 +41,7 @@ export async function createDriverAction(formData) {
   revalidatePath(result.driver.guiaInstalacao?.url || "/guias");
   revalidateLinkedGuide(result.driver.guiaVinculado);
 
-  redirect(`/admin?area=drivers&action=edit&item=${encodeURIComponent(result.driver.id)}&created=${encodeURIComponent(result.driver.id)}`);
+  redirect("/admin?area=drivers&created=1");
 }
 
 export async function updateDriverAction(formData) {
@@ -57,7 +59,36 @@ export async function updateDriverAction(formData) {
   revalidatePath(result.driver.guiaInstalacao?.url || "/guias");
   revalidateLinkedGuide(result.driver.guiaVinculado);
 
-  redirect(`/admin?area=drivers&action=edit&item=${encodeURIComponent(result.driver.id)}&updated=${encodeURIComponent(result.driver.id)}`);
+  redirect("/admin?area=drivers&updated=1");
+}
+
+export async function deleteDriversAction(formData) {
+  await requireAdmin();
+
+  const ids = getSelectedIds(formData);
+
+  if (!ids.length) {
+    redirect("/admin?area=drivers&action=delete&error=Selecione%20pelo%20menos%20um%20driver%20para%20excluir.");
+  }
+
+  for (const id of ids) {
+    const itemForm = new FormData();
+    itemForm.set("id", id);
+    const result = await deleteDriverFromForm(itemForm);
+
+    if (!result.ok) {
+      redirect(`/admin?area=drivers&action=delete&error=${encodeURIComponent(result.error)}`);
+    }
+
+    revalidateLinkedGuide(result.driver?.guiaVinculado);
+    revalidatePath(result.driver?.guiaInstalacao?.url || "/guias");
+  }
+
+  revalidatePath("/");
+  revalidatePath("/drivers");
+  revalidatePath("/guias");
+
+  redirect(`/admin?area=drivers&driversDeleted=${encodeURIComponent(String(ids.length))}`);
 }
 
 export async function createInternalAppAction(formData) {
@@ -73,7 +104,7 @@ export async function createInternalAppAction(formData) {
   revalidatePath("/apps");
   revalidateLinkedGuide(result.app.guiaVinculado);
 
-  redirect(`/admin?area=apps&action=edit&item=${encodeURIComponent(result.app.id)}&appCreated=${encodeURIComponent(result.app.id)}`);
+  redirect("/admin?area=apps&appCreated=1");
 }
 
 export async function updateInternalAppAction(formData) {
@@ -89,7 +120,35 @@ export async function updateInternalAppAction(formData) {
   revalidatePath("/apps");
   revalidateLinkedGuide(result.app.guiaVinculado);
 
-  redirect(`/admin?area=apps&action=edit&item=${encodeURIComponent(result.app.id)}&appUpdated=${encodeURIComponent(result.app.id)}`);
+  redirect("/admin?area=apps&appUpdated=1");
+}
+
+export async function deleteInternalAppsAction(formData) {
+  await requireAdmin();
+
+  const ids = getSelectedIds(formData);
+
+  if (!ids.length) {
+    redirect("/admin?area=apps&action=delete&error=Selecione%20pelo%20menos%20um%20aplicativo%20para%20excluir.");
+  }
+
+  for (const id of ids) {
+    const itemForm = new FormData();
+    itemForm.set("id", id);
+    const result = await deleteInternalAppFromForm(itemForm);
+
+    if (!result.ok) {
+      redirect(`/admin?area=apps&action=delete&error=${encodeURIComponent(result.error)}`);
+    }
+
+    revalidateLinkedGuide(result.app?.guiaVinculado);
+  }
+
+  revalidatePath("/");
+  revalidatePath("/apps");
+  revalidatePath("/guias");
+
+  redirect(`/admin?area=apps&appsDeleted=${encodeURIComponent(String(ids.length))}`);
 }
 
 export async function createGuideAction(formData) {
@@ -110,7 +169,7 @@ export async function createGuideAction(formData) {
     redirect(returnTarget);
   }
 
-  redirect(`/admin?area=guides&action=edit&item=${encodeURIComponent(result.guide.id)}&guideCreated=${encodeURIComponent(result.guide.id)}`);
+  redirect("/admin?area=guides&guideCreated=1");
 }
 
 export async function updateGuideAction(formData) {
@@ -124,7 +183,7 @@ export async function updateGuideAction(formData) {
 
   revalidatePath("/guias");
   revalidatePath(result.guide?.url || "/guias");
-  redirect(`/admin?area=guides&action=edit&item=${encodeURIComponent(result.guide.id)}&guideUpdated=${encodeURIComponent(result.guide.id)}`);
+  redirect("/admin?area=guides&guideUpdated=1");
 }
 
 export async function deleteGuideAction(formData) {
@@ -171,7 +230,7 @@ export async function createTutorialAction(formData) {
     redirect(returnTarget);
   }
 
-  redirect(`/admin?area=tutorials&action=edit&item=${encodeURIComponent(result.tutorial.id)}&tutorialCreated=${encodeURIComponent(result.tutorial.id)}`);
+  redirect("/admin?area=tutorials&tutorialCreated=1");
 }
 
 export async function updateTutorialAction(formData) {
@@ -185,7 +244,7 @@ export async function updateTutorialAction(formData) {
 
   revalidatePath("/tutoriais");
   revalidatePath(result.tutorial?.url || `/tutoriais/${result.tutorial.id}`);
-  redirect(`/admin?area=tutorials&action=edit&item=${encodeURIComponent(result.tutorial.id)}&tutorialUpdated=${encodeURIComponent(result.tutorial.id)}`);
+  redirect("/admin?area=tutorials&tutorialUpdated=1");
 }
 
 export async function deleteTutorialAction(formData) {
@@ -233,6 +292,17 @@ function revalidateLinkedGuide(guide) {
   if (guide?.url) {
     revalidatePath(guide.url);
   }
+}
+
+function getSelectedIds(formData) {
+  return [
+    ...new Set(
+      formData
+        .getAll("ids")
+        .map((id) => String(id || "").trim())
+        .filter(Boolean)
+    )
+  ];
 }
 
 function getReturnTarget(formData, linkedGuide) {

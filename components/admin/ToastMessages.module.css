@@ -1,0 +1,27 @@
+.stack {
+  position: sticky;
+  top: 88px;
+  z-index: 70;
+  display: grid;
+  gap: 10px;
+}
+
+.toast,
+.error {
+  border-radius: 8px;
+  padding: 13px 14px;
+  box-shadow: var(--shadow-sm);
+  font-weight: 800;
+}
+
+.toast {
+  border: 1px solid rgba(21, 128, 61, 0.22);
+  color: var(--color-success);
+  background: #ecfdf3;
+}
+
+.error {
+  border: 1px solid rgba(194, 27, 27, 0.22);
+  color: var(--color-brand-strong);
+  background: var(--color-brand-soft);
+}

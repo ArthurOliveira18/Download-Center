@@ -1,11 +1,12 @@
 [
   {
     "id": "guia-bematech-mp-4200-th",
+    "slug": "como-instalar-bematech-mp-4200-th-bematech-mp-4200-th",
     "titulo": "Como instalar Bematech MP-4200 TH",
     "marca": "Bematech",
     "modelo": "MP-4200 TH",
     "categoria": "Impressora termica",
-    "driverRelacionadoId": "bematech-mp-4200-th",
+    "driverRelacionadoId": "",
     "aplicativoRelacionadoId": "",
     "descricao": "Guia detalhado para instalar o driver da impressora Bematech MP-4200 TH via USB ou rede.",
     "keywords": [
@@ -17,7 +18,13 @@
       "driver",
       "instalacao",
       "termica",
-      "fiscal"
+      "fiscal",
+      "como",
+      "instalar",
+      "mp",
+      "th",
+      "impressora",
+      "guia"
     ],
     "compatibilidade": [
       "Windows 11",

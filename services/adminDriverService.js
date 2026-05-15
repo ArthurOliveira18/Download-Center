@@ -1,7 +1,7 @@
 import { getDriversData, writeDriversData } from "@/services/dataRepository";
 import { resolveLinkedGuideFromForm } from "@/services/linkedGuideService";
 import { isSupabaseAdminConfigured } from "@/services/supabase/config";
-import { createSupabaseDriver, updateSupabaseDriver } from "@/services/supabase/driversSupabaseService";
+import { createSupabaseDriver, deleteSupabaseDriver, updateSupabaseDriver } from "@/services/supabase/driversSupabaseService";
 import { uploadDownloadFile } from "@/services/supabase/storageService";
 import { saveDriverFile } from "@/services/storage/localDriverStorage";
 import { normalizeText, tokenize } from "@/utils/search";
@@ -216,6 +216,30 @@ export async function updateDriverEditableFieldsFromForm(formData) {
     ok: true,
     driver: nextDrivers[driverIndex]
   };
+}
+
+export async function deleteDriverFromForm(formData) {
+  const drivers = await getDriversData();
+  const useSupabase = isSupabaseAdminConfigured();
+  const id = getRequiredText(formData, "id", "Driver nao informado.");
+
+  if (id.error) {
+    return { ok: false, error: id.error };
+  }
+
+  const driver = drivers.find((item) => item.id === id.value);
+
+  if (!driver) {
+    return { ok: false, error: "Driver nao encontrado." };
+  }
+
+  if (useSupabase) {
+    await deleteSupabaseDriver(id.value);
+    return { ok: true, id: id.value, driver };
+  }
+
+  await writeDrivers(drivers.filter((item) => item.id !== id.value));
+  return { ok: true, id: id.value, driver };
 }
 
 async function appendDriver(drivers, newDriver) {

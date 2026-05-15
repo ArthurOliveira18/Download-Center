@@ -38,7 +38,7 @@ export default async function HomePage() {
         <div className={styles.heroPanel}>
           <div className={styles.panelTop}>
             <strong>{drivers.length}</strong>
-            <span>drivers termicos cadastrados</span>
+            <span>drivers cadastrados</span>
           </div>
           <div className={styles.panelLine} />
           <div className={styles.panelRows}>
@@ -63,7 +63,7 @@ export default async function HomePage() {
           <PackageOpen size={22} />
           <span>
             <strong>Aplicativos internos</strong>
-            <small>TAKEAT Printer, Hercules e utilitarios</small>
+            <small>TAKEAT Printer, Hercules entre outros</small>
           </span>
           <ArrowRight size={18} />
         </Link>
