@@ -1,4 +1,50 @@
 {
-  "drivers": [],
+  "drivers": [
+    {
+      "id": "elgin-i9-i7-i8",
+      "marca": "Elgin",
+      "modelo": "i9,i7,i8",
+      "categoria": "Impressora termica",
+      "descricao": "",
+      "compatibilidade": [],
+      "keywords": [
+        "i9",
+        "i7",
+        "i8",
+        "elgin",
+        "impressora",
+        "termica",
+        "driver"
+      ],
+      "destaque": false,
+      "driver": {
+        "nome": "Elgin i9,i7,i8",
+        "versao": "",
+        "localPath": "C:/Users/artur/Desktop/DriversTakeat/Download-Center/public/drivers/elgin/i9-i7-i8-driver.zip",
+        "downloadUrl": "/drivers/elgin/i9-i7-i8-driver.zip",
+        "storagePath": "",
+        "versoes": [
+          {
+            "nome": "Atual",
+            "downloadUrl": "/drivers/elgin/i9-i7-i8-driver.zip",
+            "localPath": "C:/Users/artur/Desktop/DriversTakeat/Download-Center/public/drivers/elgin/i9-i7-i8-driver.zip",
+            "storagePath": ""
+          }
+        ]
+      },
+      "guiaVinculado": null,
+      "guiaInstalacao": {
+        "titulo": "Como instalar Elgin i9,i7,i8",
+        "url": "/guias/elgin/i9-i7-i8",
+        "passos": [
+          "Baixe o driver de impressora termica cadastrado no Download Center.",
+          "Extraia o arquivo, quando aplicavel.",
+          "Execute o instalador como administrador.",
+          "Configure a porta USB, serial ou rede.",
+          "Finalize com uma impressao de teste."
+        ]
+      }
+    }
+  ],
   "apps": []
 }
