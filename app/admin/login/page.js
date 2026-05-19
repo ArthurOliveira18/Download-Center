@@ -50,11 +50,7 @@ export default async function AdminLoginPage({ searchParams }) {
           </button>
         </form>
 
-        <ul className={styles.securityList}>
-          <li>Credenciais lidas apenas no servidor via variaveis de ambiente.</li>
-          <li>Cookie httpOnly assinado, com SameSite strict e seguro em producao.</li>
-          <li>Estrutura preparada para varios funcionarios e permissoes.</li>
-        </ul>
+        
       </section>
     </div>
   );
