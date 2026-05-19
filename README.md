@@ -20,7 +20,7 @@ http://127.0.0.1:3000
 Configure estas variaveis no ambiente do servidor. Em desenvolvimento local, elas tambem podem ficar em `.env.local`.
 
 ```env
-ADMIN_USER=admin@takeat.app
+ADMIN_USER=email_do_admin
 ADMIN_PASSWORD=sua-senha-local
 ADMIN_NAME=Administrador TAKEAT
 SESSION_SECRET=uma-chave-forte-com-32-caracteres-ou-mais
