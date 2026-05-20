@@ -1,15 +1,15 @@
 import { buildStorageDownloadUrl } from "@/services/supabase/storageService";
 import { validateDownloadFileMetadata } from "@/services/uploads/downloadFilePolicy";
 
-export function getUploadedDownloadReferenceFromForm(formData, { folder, requiredMessage, requireStorage = true }) {
+export function getUploadedDownloadReferenceFromForm(formData, { folder, requiredMessage }) {
   const storagePath = getText(formData, "uploadedStoragePath");
   const downloadUrl = getText(formData, "uploadedDownloadUrl");
-  const localPath = getText(formData, "uploadedLocalPath");
   const originalName = getText(formData, "uploadedOriginalName") || getText(formData, "uploadedFileName");
   const fileName = getText(formData, "uploadedFileName") || getFileNameFromStoragePath(storagePath);
   const fileSize = Number(getText(formData, "uploadedFileSize"));
+  const fileType = getText(formData, "uploadedFileType") || "application/octet-stream";
 
-  if (!downloadUrl || (requireStorage && !storagePath)) {
+  if (!downloadUrl || !storagePath) {
     return {
       ok: false,
       error: requiredMessage || "Envie o arquivo antes de salvar."
@@ -39,21 +39,7 @@ export function getUploadedDownloadReferenceFromForm(formData, { folder, require
     return validation;
   }
 
-  if (!storagePath && !localPath) {
-    return {
-      ok: false,
-      error: "Referencia de arquivo invalida."
-    };
-  }
-
-  if (!storagePath && folder && !downloadUrl.startsWith(`/${folder}/`)) {
-    return {
-      ok: false,
-      error: "O arquivo enviado nao pertence ao tipo de cadastro selecionado."
-    };
-  }
-
-  const expectedDownloadUrl = storagePath ? buildStorageDownloadUrl(storagePath) : downloadUrl;
+  const expectedDownloadUrl = buildStorageDownloadUrl(storagePath);
 
   if (downloadUrl !== expectedDownloadUrl) {
     return {
@@ -66,7 +52,8 @@ export function getUploadedDownloadReferenceFromForm(formData, { folder, require
     ok: true,
     originalName,
     fileName,
-    localPath,
+    fileSizeBytes: fileSize,
+    fileType,
     storagePath,
     downloadUrl
   };

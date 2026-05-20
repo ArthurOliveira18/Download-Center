@@ -87,7 +87,6 @@ export default async function AdminPage({ searchParams }) {
   const manualGuides = await getGuidesData();
   const guideOptions = await getLinkedGuideOptions();
   const directStorageUploadEnabled = isSupabaseAdminConfigured();
-  const localFileUploadEnabled = !process.env.VERCEL && !directStorageUploadEnabled;
   const area = normalizeArea(getParam(params, "area"));
   const action = normalizeAction(getParam(params, "action"));
   const itemId = getParam(params, "item");
@@ -121,10 +120,10 @@ export default async function AdminPage({ searchParams }) {
       ) : null}
 
       {area === "drivers" ? (
-        <DriversArea action={action} directStorageUploadEnabled={directStorageUploadEnabled} drivers={drivers} guideOptions={guideOptions} linkedGuideValue={linkedGuideValue} localFileUploadEnabled={localFileUploadEnabled} selectedId={itemId} />
+        <DriversArea action={action} directStorageUploadEnabled={directStorageUploadEnabled} drivers={drivers} guideOptions={guideOptions} linkedGuideValue={linkedGuideValue} selectedId={itemId} />
       ) : null}
       {area === "apps" ? (
-        <AppsArea action={action} apps={apps} directStorageUploadEnabled={directStorageUploadEnabled} guideOptions={guideOptions} linkedGuideValue={linkedGuideValue} localFileUploadEnabled={localFileUploadEnabled} selectedId={itemId} />
+        <AppsArea action={action} apps={apps} directStorageUploadEnabled={directStorageUploadEnabled} guideOptions={guideOptions} linkedGuideValue={linkedGuideValue} selectedId={itemId} />
       ) : null}
       {area === "guides" ? (
         <GuidesArea action={action} apps={apps} drivers={drivers} guides={manualGuides} returnContext={returnContext} selectedId={itemId} />
@@ -193,7 +192,7 @@ function AreaHeader({ area }) {
   );
 }
 
-function DriversArea({ action, directStorageUploadEnabled, drivers, guideOptions, linkedGuideValue, localFileUploadEnabled, selectedId }) {
+function DriversArea({ action, directStorageUploadEnabled, drivers, guideOptions, linkedGuideValue, selectedId }) {
   const selectedDriver = drivers.find((driver) => driver.id === selectedId);
   const closeHref = "/admin?area=drivers";
 
@@ -231,7 +230,7 @@ function DriversArea({ action, directStorageUploadEnabled, drivers, guideOptions
 
       {action === "create" ? (
         <AdminModal closeHref={closeHref} eyebrow="Novo driver termico" icon={FilePlus2} title="Cadastrar driver de impressora termica">
-          <DriverCreateForm directStorageUploadEnabled={directStorageUploadEnabled} guideOptions={guideOptions} linkedGuideValue={linkedGuideValue} localFileUploadEnabled={localFileUploadEnabled} />
+          <DriverCreateForm directStorageUploadEnabled={directStorageUploadEnabled} guideOptions={guideOptions} linkedGuideValue={linkedGuideValue} />
         </AdminModal>
       ) : null}
 
@@ -292,7 +291,7 @@ function DriversArea({ action, directStorageUploadEnabled, drivers, guideOptions
   );
 }
 
-function AppsArea({ action, apps, directStorageUploadEnabled, guideOptions, linkedGuideValue, localFileUploadEnabled, selectedId }) {
+function AppsArea({ action, apps, directStorageUploadEnabled, guideOptions, linkedGuideValue, selectedId }) {
   const selectedApp = apps.find((app) => app.id === selectedId);
   const closeHref = "/admin?area=apps";
 
@@ -330,7 +329,7 @@ function AppsArea({ action, apps, directStorageUploadEnabled, guideOptions, link
 
       {action === "create" ? (
         <AdminModal closeHref={closeHref} eyebrow="Novo aplicativo" icon={FilePlus2} title="Adicionar aplicativo">
-          <AppCreateForm directStorageUploadEnabled={directStorageUploadEnabled} guideOptions={guideOptions} linkedGuideValue={linkedGuideValue} localFileUploadEnabled={localFileUploadEnabled} />
+          <AppCreateForm directStorageUploadEnabled={directStorageUploadEnabled} guideOptions={guideOptions} linkedGuideValue={linkedGuideValue} />
         </AdminModal>
       ) : null}
 
@@ -649,7 +648,7 @@ function SelectItemForm({ action, area, items }) {
   );
 }
 
-function DriverCreateForm({ directStorageUploadEnabled, guideOptions, linkedGuideValue, localFileUploadEnabled }) {
+function DriverCreateForm({ directStorageUploadEnabled, guideOptions, linkedGuideValue }) {
   return (
     <form action={createDriverAction} className={styles.formGrid}>
       <label className={styles.field}>
@@ -672,7 +671,6 @@ function DriverCreateForm({ directStorageUploadEnabled, guideOptions, linkedGuid
         directUpload={directStorageUploadEnabled}
         folder="drivers"
         label="Arquivo do driver"
-        localUpload={localFileUploadEnabled}
         namePartFields={["marca", "modelo", "versao", "driverName"]}
       />
       <label className={styles.wideField}>
@@ -748,7 +746,7 @@ function DriverEditForm({ driver, guideOptions, linkedGuideValue }) {
   );
 }
 
-function AppCreateForm({ directStorageUploadEnabled, guideOptions, linkedGuideValue, localFileUploadEnabled }) {
+function AppCreateForm({ directStorageUploadEnabled, guideOptions, linkedGuideValue }) {
   return (
     <form action={createInternalAppAction} className={styles.formGrid}>
       <label className={styles.field}>
@@ -767,7 +765,6 @@ function AppCreateForm({ directStorageUploadEnabled, guideOptions, linkedGuideVa
         directUpload={directStorageUploadEnabled}
         folder="apps"
         label="Arquivo do aplicativo"
-        localUpload={localFileUploadEnabled}
         namePartFields={["nome", "versao"]}
       />
       <label className={styles.wideField}>

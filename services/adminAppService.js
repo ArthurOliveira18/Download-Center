@@ -2,6 +2,7 @@ import { getAppsData, writeAppsData } from "@/services/dataRepository";
 import { resolveLinkedGuideFromForm } from "@/services/linkedGuideService";
 import { isSupabaseAdminConfigured } from "@/services/supabase/config";
 import { createSupabaseInternalApp, deleteSupabaseInternalApp, updateSupabaseInternalApp } from "@/services/supabase/internalAppsSupabaseService";
+import { deleteDownloadFile } from "@/services/supabase/storageService";
 import { getUploadedDownloadReferenceFromForm } from "@/services/uploads/formUploadReference";
 import { normalizeText, tokenize } from "@/utils/search";
 import { slugify } from "@/utils/slug";
@@ -22,8 +23,8 @@ export async function createInternalAppFromForm(formData) {
     return { ok: false, error: validationError };
   }
 
-  if (!useSupabase && process.env.VERCEL) {
-    return { ok: false, error: "Configure o Supabase Storage para cadastrar arquivos na Vercel." };
+  if (!useSupabase) {
+    return { ok: false, error: "Configure NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY e SUPABASE_STORAGE_BUCKET para cadastrar aplicativos no Supabase." };
   }
 
   const id = slugify(nome.value);
@@ -34,17 +35,10 @@ export async function createInternalAppFromForm(formData) {
 
   const metadados = getOptionalText(formData, "metadados");
   const linkedGuide = linkedGuideResult.guide;
-  const upload = useSupabase
-    ? getUploadedDownloadReferenceFromForm(formData, {
-        folder: "apps",
-        requireStorage: true,
-        requiredMessage: "Envie o arquivo do aplicativo antes de cadastrar."
-      })
-    : getUploadedDownloadReferenceFromForm(formData, {
-        folder: "apps",
-        requireStorage: false,
-        requiredMessage: "Envie o arquivo do aplicativo antes de cadastrar."
-      });
+  const upload = getUploadedDownloadReferenceFromForm(formData, {
+    folder: "apps",
+    requiredMessage: "Envie o arquivo do aplicativo antes de cadastrar."
+  });
 
   if (!upload.ok) {
     return upload;
@@ -67,7 +61,11 @@ export async function createInternalAppFromForm(formData) {
     destaque: false,
     download: {
       nome: nome.value,
-      localPath: upload.localPath || upload.storagePath || "",
+      originalName: upload.originalName || upload.fileName || "",
+      fileName: upload.fileName || upload.originalName || "",
+      fileSizeBytes: upload.fileSizeBytes || 0,
+      fileType: upload.fileType || "application/octet-stream",
+      localPath: upload.storagePath || "",
       downloadUrl: upload.downloadUrl || "",
       storagePath: upload.storagePath || ""
     },
@@ -75,8 +73,19 @@ export async function createInternalAppFromForm(formData) {
   };
 
   if (useSupabase) {
-    const createdApp = await createSupabaseInternalApp(app);
-    return { ok: true, app: createdApp };
+    try {
+      const createdApp = await createSupabaseInternalApp(app);
+      return { ok: true, app: createdApp };
+    } catch (error) {
+      if (upload.storagePath) {
+        await deleteDownloadFile(upload.storagePath);
+      }
+
+      return {
+        ok: false,
+        error: `Arquivo enviado, mas nao foi possivel salvar o aplicativo no banco. O envio foi revertido. ${error.message}`
+      };
+    }
   }
 
   await writeApps([...internalApps, app]);

@@ -2,6 +2,7 @@ import { getDriversData, writeDriversData } from "@/services/dataRepository";
 import { resolveLinkedGuideFromForm } from "@/services/linkedGuideService";
 import { isSupabaseAdminConfigured } from "@/services/supabase/config";
 import { createSupabaseDriver, deleteSupabaseDriver, updateSupabaseDriver } from "@/services/supabase/driversSupabaseService";
+import { deleteDownloadFile } from "@/services/supabase/storageService";
 import { getUploadedDownloadReferenceFromForm } from "@/services/uploads/formUploadReference";
 import { normalizeText, tokenize } from "@/utils/search";
 import { slugify } from "@/utils/slug";
@@ -32,8 +33,8 @@ export async function createDriverFromForm(formData) {
     return { ok: false, error: validationError };
   }
 
-  if (!useSupabase && process.env.VERCEL) {
-    return { ok: false, error: "Configure o Supabase Storage para cadastrar arquivos na Vercel." };
+  if (!useSupabase) {
+    return { ok: false, error: "Configure NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY, SUPABASE_SERVICE_ROLE_KEY e SUPABASE_STORAGE_BUCKET para cadastrar drivers no Supabase." };
   }
 
   const duplicate = drivers.find((driver) => {
@@ -50,17 +51,10 @@ export async function createDriverFromForm(formData) {
     };
   }
 
-  const upload = useSupabase
-    ? getUploadedDownloadReferenceFromForm(formData, {
-        folder: "drivers",
-        requireStorage: true,
-        requiredMessage: "Envie o arquivo do driver antes de cadastrar."
-      })
-    : getUploadedDownloadReferenceFromForm(formData, {
-        folder: "drivers",
-        requireStorage: false,
-        requiredMessage: "Envie o arquivo do driver antes de cadastrar."
-      });
+  const upload = getUploadedDownloadReferenceFromForm(formData, {
+    folder: "drivers",
+    requiredMessage: "Envie o arquivo do driver antes de cadastrar."
+  });
 
   if (!upload.ok) {
     return upload;
@@ -89,14 +83,20 @@ export async function createDriverFromForm(formData) {
     driver: {
       nome: driverName.value,
       versao,
-      localPath: upload.localPath || upload.storagePath,
+      originalName: upload.originalName || upload.fileName || "",
+      fileName: upload.fileName || upload.originalName || "",
+      fileSizeBytes: upload.fileSizeBytes || 0,
+      fileType: upload.fileType || "application/octet-stream",
+      localPath: upload.storagePath,
       downloadUrl: upload.downloadUrl,
       storagePath: upload.storagePath || "",
       versoes: [
         {
           nome: versionLabel,
           downloadUrl: upload.downloadUrl,
-          localPath: upload.localPath || upload.storagePath,
+          fileSizeBytes: upload.fileSizeBytes || 0,
+          fileType: upload.fileType || "application/octet-stream",
+          localPath: upload.storagePath,
           storagePath: upload.storagePath || ""
         }
       ]
@@ -116,11 +116,22 @@ export async function createDriverFromForm(formData) {
   };
 
   if (useSupabase) {
-    const createdDriver = await createSupabaseDriver(newDriver);
-    return {
-      ok: true,
-      driver: createdDriver
-    };
+    try {
+      const createdDriver = await createSupabaseDriver(newDriver);
+      return {
+        ok: true,
+        driver: createdDriver
+      };
+    } catch (error) {
+      if (upload.storagePath) {
+        await deleteDownloadFile(upload.storagePath);
+      }
+
+      return {
+        ok: false,
+        error: `Arquivo enviado, mas nao foi possivel salvar o driver no banco. O envio foi revertido. ${error.message}`
+      };
+    }
   }
 
   await appendDriver(drivers, newDriver);

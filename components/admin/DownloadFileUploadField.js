@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { getSupabaseBrowserClient } from "@/services/supabase/client";
 import {
   allowedDownloadAccept,
+  bytesToMb,
   formatFileSize,
   maxDownloadFileSizeBytes,
   validateDownloadFileMetadata
@@ -14,7 +15,7 @@ const hiddenFieldNames = {
   downloadUrl: "uploadedDownloadUrl",
   fileName: "uploadedFileName",
   fileSize: "uploadedFileSize",
-  localPath: "uploadedLocalPath",
+  fileType: "uploadedFileType",
   originalName: "uploadedOriginalName",
   storagePath: "uploadedStoragePath"
 };
@@ -23,7 +24,6 @@ export function DownloadFileUploadField({
   directUpload = false,
   folder,
   label,
-  localUpload = false,
   namePartFields = []
 }) {
   const inputRef = useRef(null);
@@ -33,14 +33,13 @@ export function DownloadFileUploadField({
   const [status, setStatus] = useState("");
   const [uploading, setUploading] = useState(false);
   const namePartFieldsKey = namePartFields.join("|");
-  const canUpload = directUpload || localUpload;
-  const storageUnavailable = !canUpload;
+  const storageUnavailable = !directUpload;
 
   useEffect(() => {
     const input = inputRef.current;
     const form = input?.form;
 
-    if (!canUpload || !input || !form) {
+    if (!directUpload || !input || !form) {
       return undefined;
     }
 
@@ -66,6 +65,13 @@ export function DownloadFileUploadField({
         fileSize: file.size
       });
 
+      console.info("[DownloadCenter upload] arquivo selecionado", {
+        fileName: file.name,
+        fileSizeBytes: file.size,
+        fileSizeMb: bytesToMb(file.size),
+        fileType: file.type || "application/octet-stream"
+      });
+
       if (!validation.ok) {
         setError(validation.error);
         setStatus("");
@@ -73,8 +79,7 @@ export function DownloadFileUploadField({
         return;
       }
 
-      const hasUploadedReference =
-        getHiddenValue(form, hiddenFieldNames.storagePath) || getHiddenValue(form, hiddenFieldNames.localPath);
+      const hasUploadedReference = getHiddenValue(form, hiddenFieldNames.storagePath);
 
       if (signature && signature === uploadedSignatureRef.current && hasUploadedReference) {
         clearInputError(input);
@@ -91,22 +96,17 @@ export function DownloadFileUploadField({
       setUploading(true);
 
       try {
-        const upload = directUpload
-          ? await uploadToSupabaseStorage(form, file, folder, namePartFieldsKey.split("|").filter(Boolean))
-          : await uploadToLocalStorage(form, file, folder, namePartFieldsKey.split("|").filter(Boolean));
+        const upload = await uploadToSupabaseStorage(form, file, folder, namePartFieldsKey.split("|").filter(Boolean));
 
         if (upload.storagePath) {
           setHiddenValue(form, hiddenFieldNames.storagePath, upload.storagePath);
         }
 
-        if (upload.localPath) {
-          setHiddenValue(form, hiddenFieldNames.localPath, upload.localPath);
-        }
-
         setHiddenValue(form, hiddenFieldNames.downloadUrl, upload.downloadUrl);
         setHiddenValue(form, hiddenFieldNames.originalName, upload.originalName || file.name);
         setHiddenValue(form, hiddenFieldNames.fileName, upload.fileName);
-        setHiddenValue(form, hiddenFieldNames.fileSize, String(file.size));
+        setHiddenValue(form, hiddenFieldNames.fileSize, String(upload.fileSizeBytes || file.size));
+        setHiddenValue(form, hiddenFieldNames.fileType, upload.contentType || file.type || "application/octet-stream");
         uploadedSignatureRef.current = signature;
         setStatus("Arquivo enviado. Salvando cadastro...");
         readyToSubmitRef.current = true;
@@ -125,7 +125,7 @@ export function DownloadFileUploadField({
     return () => {
       form.removeEventListener("submit", handleSubmit);
     };
-  }, [canUpload, directUpload, folder, namePartFieldsKey]);
+  }, [directUpload, folder, namePartFieldsKey]);
 
   function handleFileChange(event) {
     const file = event.target.files?.[0];
@@ -167,20 +167,18 @@ export function DownloadFileUploadField({
         type="file"
       />
       <input name={hiddenFieldNames.storagePath} type="hidden" />
-      <input name={hiddenFieldNames.localPath} type="hidden" />
       <input name={hiddenFieldNames.downloadUrl} type="hidden" />
       <input name={hiddenFieldNames.originalName} type="hidden" />
       <input name={hiddenFieldNames.fileName} type="hidden" />
       <input name={hiddenFieldNames.fileSize} type="hidden" />
+      <input name={hiddenFieldNames.fileType} type="hidden" />
       {error ? (
         <small className={styles.error}>{error}</small>
       ) : (
         <small className={styles.hint}>
           {storageUnavailable
             ? "Configure o Supabase Storage para enviar arquivos neste ambiente."
-            : directUpload
-            ? `O arquivo vai direto para o Supabase Storage. Limite: ${formatFileSize(maxDownloadFileSizeBytes)}.`
-            : `Limite: ${formatFileSize(maxDownloadFileSizeBytes)}.`}
+            : `O arquivo vai direto para o Supabase Storage. Limite: ${formatFileSize(maxDownloadFileSizeBytes)}.`}
         </small>
       )}
       {status ? <small className={styles.status}>{status}</small> : null}
@@ -191,6 +189,14 @@ export function DownloadFileUploadField({
 async function uploadToSupabaseStorage(form, file, folder, namePartFields) {
   const upload = await prepareSupabaseUpload(form, file, folder, namePartFields);
   const supabase = getSupabaseBrowserClient();
+  console.info("[DownloadCenter upload] enviando para Supabase Storage", {
+    bucket: upload.bucket,
+    path: upload.storagePath,
+    fileName: file.name,
+    fileSizeBytes: file.size,
+    fileSizeMb: bytesToMb(file.size),
+    fileType: upload.contentType || file.type || "application/octet-stream"
+  });
   const { error: uploadError } = await supabase.storage
     .from(upload.bucket)
     .uploadToSignedUrl(upload.storagePath, upload.token, file, {
@@ -198,8 +204,22 @@ async function uploadToSupabaseStorage(form, file, folder, namePartFields) {
     });
 
   if (uploadError) {
+    console.error("[DownloadCenter upload] erro retornado pelo Supabase Storage", {
+      bucket: upload.bucket,
+      path: upload.storagePath,
+      fileSizeBytes: file.size,
+      fileSizeMb: bytesToMb(file.size),
+      error: uploadError
+    });
     throw new Error(uploadError.message);
   }
+
+  console.info("[DownloadCenter upload] upload concluido no Supabase Storage", {
+    bucket: upload.bucket,
+    path: upload.storagePath,
+    fileSizeBytes: file.size,
+    fileSizeMb: bytesToMb(file.size)
+  });
 
   return upload;
 }
@@ -222,30 +242,6 @@ async function prepareSupabaseUpload(form, file, folder, namePartFields) {
 
   if (!response.ok || !result?.ok) {
     throw new Error(result?.error || "Nao foi possivel preparar o upload.");
-  }
-
-  return result;
-}
-
-async function uploadToLocalStorage(form, file, folder, namePartFields) {
-  const formData = new FormData();
-  const fieldValues = getNamePartValues(form, namePartFields);
-
-  formData.set("arquivo", file);
-  formData.set("folder", folder);
-
-  Object.entries(fieldValues).forEach(([key, value]) => {
-    formData.set(key, value);
-  });
-
-  const response = await fetch("/api/admin/uploads/local", {
-    method: "POST",
-    body: formData
-  });
-  const result = await response.json().catch(() => null);
-
-  if (!response.ok || !result?.ok) {
-    throw new Error(result?.error || "Nao foi possivel enviar o arquivo.");
   }
 
   return result;
@@ -277,8 +273,8 @@ function clearInputError(input) {
 function getFriendlyUploadError(error) {
   const message = error?.message || "";
 
-  if (/size|large|too big|limite|grande/i.test(message)) {
-    return `Arquivo muito grande. O limite e ${formatFileSize(maxDownloadFileSizeBytes)}.`;
+  if (/limite global|global.*limit|plano|plan/i.test(message)) {
+    return `${message} Arquivos abaixo de ${formatFileSize(maxDownloadFileSizeBytes)} sao aceitos pela aplicacao, mas o Supabase tambem precisa permitir esse tamanho no Storage.`;
   }
 
   if (/session|unauthorized|401|403|auth/i.test(message)) {

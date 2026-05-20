@@ -46,6 +46,8 @@ export async function saveDriverFile({ file, marca, modelo, versao }) {
     ok: true,
     originalName,
     fileName,
+    fileSizeBytes: file.size,
+    fileType: file.type || "application/octet-stream",
     absolutePath,
     downloadUrl,
     localPath: absolutePath.replace(/\\/g, "/")
@@ -94,6 +96,8 @@ export async function saveInternalAppFile({ file, nome, versao }) {
     ok: true,
     originalName,
     fileName,
+    fileSizeBytes: file.size,
+    fileType: file.type || "application/octet-stream",
     absolutePath,
     downloadUrl,
     localPath: absolutePath.replace(/\\/g, "/")

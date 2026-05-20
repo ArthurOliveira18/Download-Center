@@ -6,6 +6,9 @@ export function mapSupabaseDriverToAppDriver(row = {}) {
   const linkedGuide = mapLinkedGuide(row.guia || row.linked_guide || buildGuideFromViewRow(row));
   const downloadUrl = row.download_url || "";
   const storagePath = row.storage_path || "";
+  const fileSizeBytes = Number(row.file_size_bytes || 0);
+  const fileType = row.file_type || "";
+  const fileName = row.file_name || "";
   const driverVersion = row.driver_versao || "";
   const fallbackGuideUrl = buildLegacyGuideUrl(row.marca, row.modelo);
   const guideInstallUrl = linkedGuide?.type === "guide" ? linkedGuide.url : fallbackGuideUrl;
@@ -33,6 +36,9 @@ export function mapSupabaseDriverToAppDriver(row = {}) {
     driver: {
       nome: row.driver_nome || "",
       versao: driverVersion,
+      fileName,
+      fileSizeBytes,
+      fileType,
       localPath: storagePath,
       downloadUrl,
       storagePath,
@@ -40,6 +46,9 @@ export function mapSupabaseDriverToAppDriver(row = {}) {
         {
           nome: driverVersion || row.driver_nome || "Atual",
           downloadUrl,
+          fileName,
+          fileSizeBytes,
+          fileType,
           localPath: storagePath,
           storagePath
         }
@@ -60,6 +69,9 @@ export function mapAppDriverToSupabaseDriver(driver = {}) {
     driver_nome: driver.driver?.nome || driver.driver_nome || null,
     driver_versao: driver.driver?.versao || driver.driver_versao || null,
     download_url: driver.driver?.downloadUrl || driver.download_url || null,
+    file_name: driver.driver?.fileName || driver.driver?.originalName || driver.fileName || null,
+    file_size_bytes: driver.driver?.fileSizeBytes || driver.fileSizeBytes || null,
+    file_type: driver.driver?.fileType || driver.fileType || null,
     storage_path: driver.driver?.storagePath || driver.storagePath || driver.storage_path || null,
     guia_vinculado_id: driver.guiaVinculado?.id || driver.guia_vinculado_id || null
   };
@@ -69,6 +81,9 @@ export function mapSupabaseInternalAppToAppInternalApp(row = {}) {
   const linkedGuide = mapLinkedGuide(row.guia || row.linked_guide || buildGuideFromViewRow(row));
   const downloadUrl = row.download_url || "";
   const storagePath = row.storage_path || "";
+  const fileSizeBytes = Number(row.file_size_bytes || 0);
+  const fileType = row.file_type || "";
+  const fileName = row.file_name || "";
 
   return {
     id: row.id,
@@ -84,6 +99,9 @@ export function mapSupabaseInternalAppToAppInternalApp(row = {}) {
     guiaVinculado: linkedGuide,
     download: {
       nome: row.nome || "Instalador",
+      fileName,
+      fileSizeBytes,
+      fileType,
       localPath: storagePath,
       downloadUrl,
       storagePath
@@ -100,6 +118,9 @@ export function mapAppInternalAppToSupabaseInternalApp(app = {}) {
     descricao: app.descricao || null,
     versao: app.versao || null,
     download_url: app.download?.downloadUrl || app.download_url || null,
+    file_name: app.download?.fileName || app.download?.originalName || app.fileName || null,
+    file_size_bytes: app.download?.fileSizeBytes || app.fileSizeBytes || null,
+    file_type: app.download?.fileType || app.fileType || null,
     storage_path: app.download?.storagePath || app.storagePath || app.storage_path || null,
     guia_vinculado_id: app.guiaVinculado?.id || app.guia_vinculado_id || null,
     keywords: toArray(app.keywords),

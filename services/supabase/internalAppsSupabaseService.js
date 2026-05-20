@@ -54,7 +54,7 @@ export async function createSupabaseInternalApp(app) {
     .select(appSelect)
     .single();
 
-  assertSupabaseSuccess(error);
+  assertSupabaseSuccess(error, { action: "createSupabaseInternalApp", payload });
   return mapSupabaseInternalAppToAppInternalApp(data);
 }
 
@@ -62,6 +62,9 @@ export async function updateSupabaseInternalApp(id, app) {
   const supabase = getSupabaseAdminClient();
   const payload = mapAppInternalAppToSupabaseInternalApp(app);
   delete payload.download_url;
+  delete payload.file_name;
+  delete payload.file_size_bytes;
+  delete payload.file_type;
   delete payload.storage_path;
 
   const { data, error } = await supabase
@@ -86,8 +89,13 @@ export async function deleteSupabaseInternalApp(id) {
   return true;
 }
 
-function assertSupabaseSuccess(error) {
+function assertSupabaseSuccess(error, context = {}) {
   if (error) {
+    console.error("[DownloadCenter app] erro no banco Supabase", {
+      action: context.action || "unknown",
+      error,
+      payloadKeys: context.payload ? Object.keys(context.payload) : []
+    });
     throw new Error(error.message);
   }
 }

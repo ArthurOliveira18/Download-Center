@@ -56,7 +56,7 @@ export async function createSupabaseDriver(driver) {
     .select(driverSelect)
     .single();
 
-  assertSupabaseSuccess(error);
+  assertSupabaseSuccess(error, { action: "createSupabaseDriver", payload });
   return mapSupabaseDriverToAppDriver(data);
 }
 
@@ -66,6 +66,9 @@ export async function updateSupabaseDriver(id, driver) {
   delete payload.marca;
   delete payload.modelo;
   delete payload.download_url;
+  delete payload.file_name;
+  delete payload.file_size_bytes;
+  delete payload.file_type;
   delete payload.storage_path;
 
   const { data, error } = await supabase
@@ -90,8 +93,13 @@ export async function deleteSupabaseDriver(id) {
   return true;
 }
 
-function assertSupabaseSuccess(error) {
+function assertSupabaseSuccess(error, context = {}) {
   if (error) {
+    console.error("[DownloadCenter driver] erro no banco Supabase", {
+      action: context.action || "unknown",
+      error,
+      payloadKeys: context.payload ? Object.keys(context.payload) : []
+    });
     throw new Error(error.message);
   }
 }

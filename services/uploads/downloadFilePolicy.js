@@ -39,6 +39,8 @@ export function validateDownloadFileMetadata({ fileName, fileSize }) {
 
   return {
     ok: true,
+    fileSizeBytes: size,
+    fileSizeMb: bytesToMb(size),
     extension
   };
 }
@@ -54,7 +56,7 @@ export function formatFileSize(bytes) {
   const size = Number(bytes) || 0;
 
   if (size >= 1024 * 1024) {
-    return `${Math.round(size / (1024 * 1024))} MB`;
+    return `${bytesToMb(size).toLocaleString("pt-BR", { maximumFractionDigits: 2 })} MB`;
   }
 
   if (size >= 1024) {
@@ -62,4 +64,8 @@ export function formatFileSize(bytes) {
   }
 
   return `${size} bytes`;
+}
+
+export function bytesToMb(bytes) {
+  return Number(bytes || 0) / (1024 * 1024);
 }
