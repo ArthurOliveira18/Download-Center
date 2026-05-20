@@ -1,3 +1,5 @@
+// comentário teste
+
 import { getAppsData, writeAppsData } from "@/services/dataRepository";
 import { resolveLinkedGuideFromForm } from "@/services/linkedGuideService";
 import { isSupabaseAdminConfigured } from "@/services/supabase/config";
