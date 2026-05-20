@@ -3,22 +3,11 @@ import { getSupabaseAdminClient } from "@/services/supabase/adminClient";
 import { getSupabaseStorageBucket } from "@/services/supabase/config";
 import {
   bytesToMb,
-  maxDownloadFileSizeBytes,
   validateDownloadFileMetadata
 } from "@/services/uploads/downloadFilePolicy";
 import { sanitizeFileName, slugify } from "@/utils/slug";
 
 const allowedUploadFolders = new Set(["apps", "drivers"]);
-const allowedMimeTypes = [
-  "application/zip",
-  "application/x-zip-compressed",
-  "application/vnd.rar",
-  "application/x-rar-compressed",
-  "application/x-7z-compressed",
-  "application/octet-stream",
-  "application/x-msdownload",
-  "application/x-msi"
-];
 
 export function buildStorageDownloadUrl(storagePath = "") {
   const safePath = String(storagePath || "")
@@ -61,8 +50,6 @@ export async function createSignedDownloadUpload({ contentType, fileName, fileSi
     });
     return validation;
   }
-
-  await ensureDownloadBucket();
 
   const uploadObject = buildDownloadStorageObject({
     folder,
@@ -169,72 +156,6 @@ export async function deleteDownloadFile(storagePath) {
   });
 
   return { ok: true };
-}
-
-export async function ensureDownloadBucket() {
-  const bucketName = getSupabaseStorageBucket();
-  const supabase = getSupabaseAdminClient();
-  const { data } = await supabase.storage.getBucket(bucketName);
-
-  if (data) {
-    const currentLimit = Number(data.file_size_limit || data.fileSizeLimit || 0);
-    const needsLimitUpdate = !currentLimit || currentLimit < maxDownloadFileSizeBytes;
-
-    if (needsLimitUpdate) {
-      const { error } = await supabase.storage.updateBucket(bucketName, {
-        public: false,
-        fileSizeLimit: maxDownloadFileSizeBytes,
-        allowedMimeTypes
-      });
-
-      if (error) {
-        console.error("[DownloadCenter upload] erro ao atualizar limite do bucket", {
-          bucket: bucketName,
-          currentLimitBytes: currentLimit || null,
-          targetLimitBytes: maxDownloadFileSizeBytes,
-          error
-        });
-        throw new Error(
-          `Nao foi possivel ajustar o limite do bucket ${bucketName} para 500 MB. Verifique o limite global do Supabase Storage e o plano do projeto.`
-        );
-      }
-
-      console.info("[DownloadCenter upload] bucket atualizado", {
-        bucket: bucketName,
-        previousLimitBytes: currentLimit || null,
-        targetLimitBytes: maxDownloadFileSizeBytes
-      });
-    } else {
-      console.info("[DownloadCenter upload] bucket configurado", {
-        bucket: bucketName,
-        fileSizeLimitBytes: currentLimit
-      });
-    }
-
-    return data;
-  }
-
-  const { data: createdBucket, error } = await supabase.storage.createBucket(bucketName, {
-    public: false,
-    fileSizeLimit: maxDownloadFileSizeBytes,
-    allowedMimeTypes
-  });
-
-  if (error) {
-    console.error("[DownloadCenter upload] erro ao criar bucket", {
-      bucket: bucketName,
-      targetLimitBytes: maxDownloadFileSizeBytes,
-      error
-    });
-    throw new Error(`Nao foi possivel criar o bucket ${bucketName}: ${error.message}`);
-  }
-
-  console.info("[DownloadCenter upload] bucket criado", {
-    bucket: bucketName,
-    fileSizeLimitBytes: maxDownloadFileSizeBytes
-  });
-
-  return createdBucket;
 }
 
 function buildDownloadStorageObject({ folder, originalName, nameParts = [] }) {

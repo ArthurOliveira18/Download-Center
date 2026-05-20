@@ -1,6 +1,6 @@
 export const allowedDownloadExtensions = [".zip", ".rar", ".7z", ".exe", ".msi"];
 export const allowedDownloadAccept = allowedDownloadExtensions.join(",");
-export const maxDownloadFileSizeBytes = 500 * 1024 * 1024;
+export const maxDownloadFileSizeBytes = 50 * 1024 * 1024;
 
 export function validateDownloadFileMetadata({ fileName, fileSize }) {
   const safeName = String(fileName || "").trim();

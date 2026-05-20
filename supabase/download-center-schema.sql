@@ -232,25 +232,3 @@ do update set
   role = excluded.role,
   active = excluded.active;
 
-insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
-values (
-  'download-center-files',
-  'download-center-files',
-  false,
-  524288000,
-  array[
-    'application/zip',
-    'application/x-zip-compressed',
-    'application/vnd.rar',
-    'application/x-rar-compressed',
-    'application/x-7z-compressed',
-    'application/octet-stream',
-    'application/x-msdownload',
-    'application/x-msi'
-  ]
-)
-on conflict (id)
-do update set
-  public = excluded.public,
-  file_size_limit = excluded.file_size_limit,
-  allowed_mime_types = excluded.allowed_mime_types;

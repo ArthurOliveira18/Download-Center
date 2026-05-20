@@ -273,10 +273,6 @@ function clearInputError(input) {
 function getFriendlyUploadError(error) {
   const message = error?.message || "";
 
-  if (/limite global|global.*limit|plano|plan/i.test(message)) {
-    return `${message} Arquivos abaixo de ${formatFileSize(maxDownloadFileSizeBytes)} sao aceitos pela aplicacao, mas o Supabase tambem precisa permitir esse tamanho no Storage.`;
-  }
-
   if (/session|unauthorized|401|403|auth/i.test(message)) {
     return "Sua sessao administrativa expirou. Entre novamente para enviar o arquivo.";
   }
