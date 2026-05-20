@@ -1,9 +1,13 @@
 import path from "node:path";
 import { getSupabaseAdminClient } from "@/services/supabase/adminClient";
 import { getSupabaseStorageBucket } from "@/services/supabase/config";
+import {
+  maxDownloadFileSizeBytes,
+  validateDownloadFileMetadata
+} from "@/services/uploads/downloadFilePolicy";
 import { sanitizeFileName, slugify } from "@/utils/slug";
 
-const allowedDownloadExtensions = new Set([".zip", ".rar", ".7z", ".exe", ".msi"]);
+const allowedUploadFolders = new Set(["apps", "drivers"]);
 
 export function buildStorageDownloadUrl(storagePath = "") {
   const safePath = String(storagePath || "")
@@ -14,53 +18,54 @@ export function buildStorageDownloadUrl(storagePath = "") {
   return safePath ? `/api/files/${safePath}` : "";
 }
 
-export async function uploadDownloadFile({ file, folder, nameParts = [] }) {
-  if (!file || typeof file.arrayBuffer !== "function" || file.size === 0) {
+export async function createSignedDownloadUpload({ contentType, fileName, fileSize, folder, nameParts = [] }) {
+  if (!allowedUploadFolders.has(folder)) {
     return {
       ok: false,
-      error: "Selecione um arquivo."
+      error: "Tipo de upload invalido."
     };
   }
 
-  const originalName = sanitizeFileName(file.name || "arquivo.zip");
-  const extension = path.extname(originalName).toLowerCase();
+  const originalName = sanitizeFileName(fileName || "arquivo.zip");
+  const validation = validateDownloadFileMetadata({
+    fileName: originalName,
+    fileSize
+  });
 
-  if (!allowedDownloadExtensions.has(extension)) {
-    return {
-      ok: false,
-      error: "Formato nao permitido. Use ZIP, RAR, 7Z, EXE ou MSI."
-    };
+  if (!validation.ok) {
+    return validation;
   }
 
   await ensureDownloadBucket();
 
-  const folderSlug = slugify(folder || "downloads");
-  const baseName = nameParts.map((part) => slugify(part)).filter(Boolean).join("-");
-  const timestamp = Date.now();
-  const fileName = `${baseName || path.basename(originalName, extension)}-${timestamp}${extension}`;
-  const storagePath = `${folderSlug}/${fileName}`;
+  const uploadObject = buildDownloadStorageObject({
+    folder,
+    originalName,
+    nameParts
+  });
   const supabase = getSupabaseAdminClient();
-  const { error } = await supabase.storage
+  const { data, error } = await supabase.storage
     .from(getSupabaseStorageBucket())
-    .upload(storagePath, Buffer.from(await file.arrayBuffer()), {
-      cacheControl: "3600",
-      contentType: file.type || "application/octet-stream",
+    .createSignedUploadUrl(uploadObject.storagePath, {
       upsert: false
     });
 
-  if (error) {
+  if (error || !data?.token) {
     return {
       ok: false,
-      error: `Falha ao enviar arquivo para o Supabase Storage: ${error.message}`
+      error: error?.message || "Nao foi possivel preparar o envio do arquivo."
     };
   }
 
   return {
     ok: true,
+    bucket: getSupabaseStorageBucket(),
+    contentType: contentType || "application/octet-stream",
     originalName,
-    fileName,
-    storagePath,
-    downloadUrl: buildStorageDownloadUrl(storagePath)
+    ...uploadObject,
+    token: data.token,
+    signedUrl: data.signedUrl || "",
+    downloadUrl: buildStorageDownloadUrl(uploadObject.storagePath)
   };
 }
 
@@ -103,7 +108,7 @@ export async function ensureDownloadBucket() {
 
   const { data: createdBucket, error } = await supabase.storage.createBucket(bucketName, {
     public: false,
-    fileSizeLimit: 1024 * 1024 * 500,
+    fileSizeLimit: maxDownloadFileSizeBytes,
     allowedMimeTypes: [
       "application/zip",
       "application/x-zip-compressed",
@@ -121,4 +126,18 @@ export async function ensureDownloadBucket() {
   }
 
   return createdBucket;
+}
+
+function buildDownloadStorageObject({ folder, originalName, nameParts = [] }) {
+  const extension = path.extname(originalName).toLowerCase();
+  const folderSlug = slugify(folder || "downloads");
+  const baseName = nameParts.map((part) => slugify(part)).filter(Boolean).join("-");
+  const timestamp = Date.now();
+  const fallbackName = path.basename(originalName, extension);
+  const fileName = `${baseName || fallbackName}-${timestamp}${extension}`;
+
+  return {
+    fileName,
+    storagePath: `${folderSlug}/${fileName}`
+  };
 }

@@ -2,8 +2,7 @@ import { getAppsData, writeAppsData } from "@/services/dataRepository";
 import { resolveLinkedGuideFromForm } from "@/services/linkedGuideService";
 import { isSupabaseAdminConfigured } from "@/services/supabase/config";
 import { createSupabaseInternalApp, deleteSupabaseInternalApp, updateSupabaseInternalApp } from "@/services/supabase/internalAppsSupabaseService";
-import { uploadDownloadFile } from "@/services/supabase/storageService";
-import { saveInternalAppFile } from "@/services/storage/localDriverStorage";
+import { getUploadedDownloadReferenceFromForm } from "@/services/uploads/formUploadReference";
 import { normalizeText, tokenize } from "@/utils/search";
 import { slugify } from "@/utils/slug";
 
@@ -23,8 +22,8 @@ export async function createInternalAppFromForm(formData) {
     return { ok: false, error: validationError };
   }
 
-  if (!hasFile(formData.get("arquivo"))) {
-    return { ok: false, error: "Selecione o arquivo do aplicativo." };
+  if (!useSupabase && process.env.VERCEL) {
+    return { ok: false, error: "Configure o Supabase Storage para cadastrar arquivos na Vercel." };
   }
 
   const id = slugify(nome.value);
@@ -36,15 +35,15 @@ export async function createInternalAppFromForm(formData) {
   const metadados = getOptionalText(formData, "metadados");
   const linkedGuide = linkedGuideResult.guide;
   const upload = useSupabase
-    ? await uploadDownloadFile({
-        file: formData.get("arquivo"),
+    ? getUploadedDownloadReferenceFromForm(formData, {
         folder: "apps",
-        nameParts: [nome.value, getOptionalText(formData, "versao") || "app"]
+        requireStorage: true,
+        requiredMessage: "Envie o arquivo do aplicativo antes de cadastrar."
       })
-    : await saveInternalAppFile({
-        file: formData.get("arquivo"),
-        nome: nome.value,
-        versao: getOptionalText(formData, "versao")
+    : getUploadedDownloadReferenceFromForm(formData, {
+        folder: "apps",
+        requireStorage: false,
+        requiredMessage: "Envie o arquivo do aplicativo antes de cadastrar."
       });
 
   if (!upload.ok) {
@@ -205,6 +204,3 @@ function uniqueValues(values) {
   return [...new Set(values.map((value) => normalizeText(value)).filter(Boolean))];
 }
 
-function hasFile(file) {
-  return Boolean(file && typeof file.arrayBuffer === "function" && file.size > 0);
-}

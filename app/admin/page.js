@@ -17,6 +17,7 @@ import {
   X
 } from "lucide-react";
 import { DynamicListField } from "@/components/admin/DynamicListField";
+import { DownloadFileUploadField } from "@/components/admin/DownloadFileUploadField";
 import { MultiDeleteForm } from "@/components/admin/MultiDeleteForm";
 import { ToastMessages } from "@/components/admin/ToastMessages";
 import { getCurrentAdmin } from "@/lib/auth/server";
@@ -24,6 +25,7 @@ import { getInternalApps } from "@/services/appService";
 import { getGuidesData } from "@/services/dataRepository";
 import { getDrivers } from "@/services/driverService";
 import { getLinkedGuideOptions, getLinkedGuideValueForResource } from "@/services/linkedGuideService";
+import { isSupabaseAdminConfigured } from "@/services/supabase/config";
 import { getTutorials } from "@/services/tutorialContentService";
 import {
   createDriverAction,
@@ -84,6 +86,8 @@ export default async function AdminPage({ searchParams }) {
   const tutorials = await getTutorials();
   const manualGuides = await getGuidesData();
   const guideOptions = await getLinkedGuideOptions();
+  const directStorageUploadEnabled = isSupabaseAdminConfigured();
+  const localFileUploadEnabled = !process.env.VERCEL && !directStorageUploadEnabled;
   const area = normalizeArea(getParam(params, "area"));
   const action = normalizeAction(getParam(params, "action"));
   const itemId = getParam(params, "item");
@@ -117,10 +121,10 @@ export default async function AdminPage({ searchParams }) {
       ) : null}
 
       {area === "drivers" ? (
-        <DriversArea action={action} drivers={drivers} guideOptions={guideOptions} linkedGuideValue={linkedGuideValue} selectedId={itemId} />
+        <DriversArea action={action} directStorageUploadEnabled={directStorageUploadEnabled} drivers={drivers} guideOptions={guideOptions} linkedGuideValue={linkedGuideValue} localFileUploadEnabled={localFileUploadEnabled} selectedId={itemId} />
       ) : null}
       {area === "apps" ? (
-        <AppsArea action={action} apps={apps} guideOptions={guideOptions} linkedGuideValue={linkedGuideValue} selectedId={itemId} />
+        <AppsArea action={action} apps={apps} directStorageUploadEnabled={directStorageUploadEnabled} guideOptions={guideOptions} linkedGuideValue={linkedGuideValue} localFileUploadEnabled={localFileUploadEnabled} selectedId={itemId} />
       ) : null}
       {area === "guides" ? (
         <GuidesArea action={action} apps={apps} drivers={drivers} guides={manualGuides} returnContext={returnContext} selectedId={itemId} />
@@ -189,7 +193,7 @@ function AreaHeader({ area }) {
   );
 }
 
-function DriversArea({ action, drivers, guideOptions, linkedGuideValue, selectedId }) {
+function DriversArea({ action, directStorageUploadEnabled, drivers, guideOptions, linkedGuideValue, localFileUploadEnabled, selectedId }) {
   const selectedDriver = drivers.find((driver) => driver.id === selectedId);
   const closeHref = "/admin?area=drivers";
 
@@ -227,7 +231,7 @@ function DriversArea({ action, drivers, guideOptions, linkedGuideValue, selected
 
       {action === "create" ? (
         <AdminModal closeHref={closeHref} eyebrow="Novo driver termico" icon={FilePlus2} title="Cadastrar driver de impressora termica">
-          <DriverCreateForm guideOptions={guideOptions} linkedGuideValue={linkedGuideValue} />
+          <DriverCreateForm directStorageUploadEnabled={directStorageUploadEnabled} guideOptions={guideOptions} linkedGuideValue={linkedGuideValue} localFileUploadEnabled={localFileUploadEnabled} />
         </AdminModal>
       ) : null}
 
@@ -288,7 +292,7 @@ function DriversArea({ action, drivers, guideOptions, linkedGuideValue, selected
   );
 }
 
-function AppsArea({ action, apps, guideOptions, linkedGuideValue, selectedId }) {
+function AppsArea({ action, apps, directStorageUploadEnabled, guideOptions, linkedGuideValue, localFileUploadEnabled, selectedId }) {
   const selectedApp = apps.find((app) => app.id === selectedId);
   const closeHref = "/admin?area=apps";
 
@@ -326,7 +330,7 @@ function AppsArea({ action, apps, guideOptions, linkedGuideValue, selectedId }) 
 
       {action === "create" ? (
         <AdminModal closeHref={closeHref} eyebrow="Novo aplicativo" icon={FilePlus2} title="Adicionar aplicativo">
-          <AppCreateForm guideOptions={guideOptions} linkedGuideValue={linkedGuideValue} />
+          <AppCreateForm directStorageUploadEnabled={directStorageUploadEnabled} guideOptions={guideOptions} linkedGuideValue={linkedGuideValue} localFileUploadEnabled={localFileUploadEnabled} />
         </AdminModal>
       ) : null}
 
@@ -645,7 +649,7 @@ function SelectItemForm({ action, area, items }) {
   );
 }
 
-function DriverCreateForm({ guideOptions, linkedGuideValue }) {
+function DriverCreateForm({ directStorageUploadEnabled, guideOptions, linkedGuideValue, localFileUploadEnabled }) {
   return (
     <form action={createDriverAction} className={styles.formGrid}>
       <label className={styles.field}>
@@ -664,10 +668,13 @@ function DriverCreateForm({ guideOptions, linkedGuideValue }) {
         <span>Versao (opcional)</span>
         <input name="versao" placeholder="v1.0, Windows 64 bits" />
       </label>
-      <label className={styles.field}>
-        <span>Arquivo do driver</span>
-        <input className={styles.fileInput} name="arquivo" type="file" accept=".zip,.rar,.7z,.exe,.msi" required />
-      </label>
+      <DownloadFileUploadField
+        directUpload={directStorageUploadEnabled}
+        folder="drivers"
+        label="Arquivo do driver"
+        localUpload={localFileUploadEnabled}
+        namePartFields={["marca", "modelo", "versao", "driverName"]}
+      />
       <label className={styles.wideField}>
         <span>Compatibilidade (opcional)</span>
         <input name="compatibilidade" placeholder="Windows 11, Windows 10 64-bit" />
@@ -741,7 +748,7 @@ function DriverEditForm({ driver, guideOptions, linkedGuideValue }) {
   );
 }
 
-function AppCreateForm({ guideOptions, linkedGuideValue }) {
+function AppCreateForm({ directStorageUploadEnabled, guideOptions, linkedGuideValue, localFileUploadEnabled }) {
   return (
     <form action={createInternalAppAction} className={styles.formGrid}>
       <label className={styles.field}>
@@ -756,10 +763,13 @@ function AppCreateForm({ guideOptions, linkedGuideValue }) {
         <span>Versao (opcional)</span>
         <input name="versao" placeholder="v1.0" />
       </label>
-      <label className={styles.field}>
-        <span>Arquivo do aplicativo</span>
-        <input className={styles.fileInput} name="arquivo" type="file" accept=".zip,.rar,.7z,.exe,.msi" required />
-      </label>
+      <DownloadFileUploadField
+        directUpload={directStorageUploadEnabled}
+        folder="apps"
+        label="Arquivo do aplicativo"
+        localUpload={localFileUploadEnabled}
+        namePartFields={["nome", "versao"]}
+      />
       <label className={styles.wideField}>
         <span>Descricao (opcional)</span>
         <textarea name="descricao" placeholder="Descreva o uso interno do aplicativo." />

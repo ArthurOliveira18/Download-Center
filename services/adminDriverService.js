@@ -2,8 +2,7 @@ import { getDriversData, writeDriversData } from "@/services/dataRepository";
 import { resolveLinkedGuideFromForm } from "@/services/linkedGuideService";
 import { isSupabaseAdminConfigured } from "@/services/supabase/config";
 import { createSupabaseDriver, deleteSupabaseDriver, updateSupabaseDriver } from "@/services/supabase/driversSupabaseService";
-import { uploadDownloadFile } from "@/services/supabase/storageService";
-import { saveDriverFile } from "@/services/storage/localDriverStorage";
+import { getUploadedDownloadReferenceFromForm } from "@/services/uploads/formUploadReference";
 import { normalizeText, tokenize } from "@/utils/search";
 import { slugify } from "@/utils/slug";
 
@@ -33,8 +32,8 @@ export async function createDriverFromForm(formData) {
     return { ok: false, error: validationError };
   }
 
-  if (!hasFile(formData.get("arquivo"))) {
-    return { ok: false, error: "Selecione o arquivo do driver." };
+  if (!useSupabase && process.env.VERCEL) {
+    return { ok: false, error: "Configure o Supabase Storage para cadastrar arquivos na Vercel." };
   }
 
   const duplicate = drivers.find((driver) => {
@@ -52,16 +51,15 @@ export async function createDriverFromForm(formData) {
   }
 
   const upload = useSupabase
-    ? await uploadDownloadFile({
-        file: formData.get("arquivo"),
+    ? getUploadedDownloadReferenceFromForm(formData, {
         folder: "drivers",
-        nameParts: [marca.value, modelo.value, versao || driverName.value]
+        requireStorage: true,
+        requiredMessage: "Envie o arquivo do driver antes de cadastrar."
       })
-    : await saveDriverFile({
-        file: formData.get("arquivo"),
-        marca: marca.value,
-        modelo: modelo.value,
-        versao
+    : getUploadedDownloadReferenceFromForm(formData, {
+        folder: "drivers",
+        requireStorage: false,
+        requiredMessage: "Envie o arquivo do driver antes de cadastrar."
       });
 
   if (!upload.ok) {
@@ -276,6 +274,3 @@ function uniqueValues(values) {
   return [...new Set(values.map((value) => value.trim()).filter(Boolean))];
 }
 
-function hasFile(file) {
-  return Boolean(file && typeof file.arrayBuffer === "function" && file.size > 0);
-}

@@ -44,6 +44,77 @@
           "Finalize com uma impressao de teste."
         ]
       }
+    },
+    {
+      "id": "bematech-mp-4200-th-mp-4200-adv-mp-4200-hs",
+      "marca": "Bematech",
+      "modelo": "MP-4200 TH, MP-4200 ADV, MP-4200 HS",
+      "categoria": "Impressora termica",
+      "descricao": "Pacote completo de drivers oficiais Bematech para impressoras térmicas da linha MP-4200 TH, ADV e HS, contendo versões para Windows e Linux utilizadas em sistemas de automação comercial e PDV.",
+      "compatibilidade": [
+        "Windows 10",
+        "Windows 11",
+        "Linux",
+        "Windows 64 bits"
+      ],
+      "keywords": [
+        "mp4200",
+        "mp-4200",
+        "mp 4200",
+        "mp4200th",
+        "mp-4200th",
+        "mp 4200 th",
+        "mp4200adv",
+        "mp-4200adv",
+        "mp 4200 adv",
+        "mp4200hs",
+        "mp-4200hs",
+        "mp 4200 hs",
+        "bematech4200",
+        "bematech mp4200",
+        "bematech mp-4200",
+        "bematech mp-4200 th",
+        "bematech mp-4200 adv",
+        "bematech mp-4200 hs",
+        "bematech",
+        "mp",
+        "4200",
+        "th",
+        "adv",
+        "hs",
+        "impressora",
+        "termica",
+        "drivers",
+        "driver"
+      ],
+      "destaque": false,
+      "driver": {
+        "nome": "Drivers Bematech MP-4200 TH, ADV e HS",
+        "versao": "Drivers Windows e Linux",
+        "localPath": "C:/Users/supor/Desktop/DownloadCenter/Download-Center/public/drivers/bematech/mp-4200-th-mp-4200-adv-mp-4200-hs-drivers-windows-e-linux.zip",
+        "downloadUrl": "/drivers/bematech/mp-4200-th-mp-4200-adv-mp-4200-hs-drivers-windows-e-linux.zip",
+        "storagePath": "",
+        "versoes": [
+          {
+            "nome": "Drivers Windows e Linux",
+            "downloadUrl": "/drivers/bematech/mp-4200-th-mp-4200-adv-mp-4200-hs-drivers-windows-e-linux.zip",
+            "localPath": "C:/Users/supor/Desktop/DownloadCenter/Download-Center/public/drivers/bematech/mp-4200-th-mp-4200-adv-mp-4200-hs-drivers-windows-e-linux.zip",
+            "storagePath": ""
+          }
+        ]
+      },
+      "guiaVinculado": null,
+      "guiaInstalacao": {
+        "titulo": "Como instalar Bematech MP-4200 TH, MP-4200 ADV, MP-4200 HS",
+        "url": "/guias/bematech/mp-4200-th-mp-4200-adv-mp-4200-hs",
+        "passos": [
+          "Baixe o driver de impressora termica cadastrado no Download Center.",
+          "Extraia o arquivo, quando aplicavel.",
+          "Execute o instalador como administrador.",
+          "Configure a porta USB, serial ou rede.",
+          "Finalize com uma impressao de teste."
+        ]
+      }
     }
   ],
   "apps": []

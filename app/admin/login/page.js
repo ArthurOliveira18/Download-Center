@@ -18,7 +18,7 @@ export default async function AdminLoginPage({ searchParams }) {
 
   const errorMessage =
     params?.error === "config"
-      ? "Configure ADMIN_USER, ADMIN_PASSWORD e SESSION_SECRET no ambiente do servidor."
+      ? "Configure ADMIN_USERNAME, ADMIN_PASSWORD e AUTH_SECRET no ambiente do servidor."
       : params?.error === "invalid"
         ? "Usuario ou senha invalidos."
         : "";
@@ -39,7 +39,7 @@ export default async function AdminLoginPage({ searchParams }) {
           <input type="hidden" name="from" value={params?.from || "/admin"} />
           <label className={styles.field}>
             <span>E-mail</span>
-            <input name="username" type="email" autoComplete="username" required />
+            <input name="email" type="email" autoComplete="username" required />
           </label>
           <label className={styles.field}>
             <span>Senha</span>

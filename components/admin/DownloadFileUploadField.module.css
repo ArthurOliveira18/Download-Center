@@ -1,0 +1,47 @@
+.uploadField {
+  display: grid;
+  gap: 7px;
+}
+
+.uploadField span {
+  color: var(--color-muted);
+  font-size: 0.78rem;
+  font-weight: 850;
+  text-transform: uppercase;
+}
+
+.fileInput {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: 0 12px;
+  color: var(--color-text);
+  background: var(--color-field);
+  outline: none;
+}
+
+.fileInput:focus {
+  border-color: rgba(194, 27, 27, 0.52);
+  box-shadow: 0 0 0 4px rgba(194, 27, 27, 0.1);
+}
+
+.hint,
+.status,
+.error {
+  font-size: 0.84rem;
+  font-weight: 750;
+  line-height: 1.45;
+}
+
+.hint {
+  color: var(--color-muted);
+}
+
+.status {
+  color: var(--color-success);
+}
+
+.error {
+  color: var(--color-brand-strong);
+}

@@ -1,8 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import { validateDownloadFileMetadata } from "@/services/uploads/downloadFilePolicy";
 import { sanitizeFileName, slugify } from "@/utils/slug";
-
-const allowedDriverExtensions = new Set([".zip", ".rar", ".7z", ".exe", ".msi"]);
 
 export async function saveDriverFile({ file, marca, modelo, versao }) {
   if (process.env.VERCEL) {
@@ -21,15 +20,16 @@ export async function saveDriverFile({ file, marca, modelo, versao }) {
   }
 
   const originalName = sanitizeFileName(file.name || "driver.zip");
-  const extension = path.extname(originalName).toLowerCase();
+  const validation = validateDownloadFileMetadata({
+    fileName: originalName,
+    fileSize: file.size
+  });
 
-  if (!allowedDriverExtensions.has(extension)) {
-    return {
-      ok: false,
-      error: "Formato nao permitido. Use ZIP, RAR, 7Z, EXE ou MSI."
-    };
+  if (!validation.ok) {
+    return validation;
   }
 
+  const extension = path.extname(originalName).toLowerCase();
   const brandSlug = slugify(marca);
   const modelSlug = slugify(modelo);
   const versionSlug = versao ? slugify(versao) : "driver";
@@ -69,15 +69,16 @@ export async function saveInternalAppFile({ file, nome, versao }) {
   }
 
   const originalName = sanitizeFileName(file.name || "aplicativo.zip");
-  const extension = path.extname(originalName).toLowerCase();
+  const validation = validateDownloadFileMetadata({
+    fileName: originalName,
+    fileSize: file.size
+  });
 
-  if (!allowedDriverExtensions.has(extension)) {
-    return {
-      ok: false,
-      error: "Formato nao permitido. Use ZIP, RAR, 7Z, EXE ou MSI."
-    };
+  if (!validation.ok) {
+    return validation;
   }
 
+  const extension = path.extname(originalName).toLowerCase();
   const appSlug = slugify(nome);
   const versionSlug = versao ? slugify(versao) : "app";
   const fileName = `${appSlug}-${versionSlug}${extension}`;

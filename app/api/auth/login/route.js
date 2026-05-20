@@ -8,14 +8,26 @@ export async function POST(request) {
     : Object.fromEntries((await request.formData()).entries());
 
   const result = await signInAdmin({
-    username: String(payload.username || payload.email || ""),
-    password: String(payload.password || "")
+    username: getPayloadText(payload, ["email", "username", "user"]),
+    password: getPayloadText(payload, ["password", "senha"])
   });
 
   if (!result.ok) {
-    const status = result.error.includes("SECRET") ? 500 : 401;
+    const status = result.code === "config" ? 500 : 401;
     return NextResponse.json({ ok: false, error: result.error }, { status });
   }
 
   return NextResponse.json({ ok: true });
+}
+
+function getPayloadText(payload, keys) {
+  for (const key of keys) {
+    const value = String(payload[key] || "").trim();
+
+    if (value) {
+      return value;
+    }
+  }
+
+  return "";
 }

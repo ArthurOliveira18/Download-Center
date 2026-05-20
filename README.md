@@ -20,13 +20,13 @@ http://127.0.0.1:3000
 Configure estas variaveis no ambiente do servidor. Em desenvolvimento local, elas tambem podem ficar em `.env.local`.
 
 ```env
-ADMIN_USER=email_do_admin
-ADMIN_PASSWORD=sua-senha-local
-ADMIN_NAME=Administrador TAKEAT
-SESSION_SECRET=uma-chave-forte-com-32-caracteres-ou-mais
+ADMIN_USERNAME=seu-email-admin
+ADMIN_PASSWORD=sua-senha-segura
+ADMIN_NAME=Nome do administrador
+AUTH_SECRET=uma-chave-secreta-segura
 ```
 
-`ADMIN_USERNAME` e `AUTH_SECRET` continuam aceitos apenas como compatibilidade com configuracoes antigas. Arquivos `.env*.local` estao no `.gitignore` e nao devem ser enviados ao GitHub.
+`ADMIN_USER`, `ADMIN_EMAIL`, `SESSION_SECRET` e `JWT_SECRET` continuam aceitos apenas como compatibilidade com configuracoes antigas. Arquivos `.env*.local` estao no `.gitignore` e nao devem ser enviados ao GitHub.
 
 ## Estrutura principal
 
@@ -52,16 +52,15 @@ Acesse:
 http://127.0.0.1:3000/admin
 ```
 
-O painel permite cadastrar drivers com upload local. Ao enviar o formulario, o sistema:
+O painel permite cadastrar drivers e aplicativos internos com upload separado do cadastro. Ao enviar o formulario, o sistema:
 
 - valida campos obrigatorios;
 - evita duplicacao por marca/modelo;
-- cria a pasta do fabricante em `public/drivers/`;
-- salva o arquivo com nome padronizado;
+- envia o arquivo para o storage configurado antes de salvar os metadados;
 - persiste o cadastro em `data/json/downloads.json`;
 - cria a URL do guia em `/guias/{marca}/{modelo}`.
 
-No ambiente local, os arquivos sao gravados dentro do projeto. Para producao, use um ambiente Node com disco persistente para manter os JSONs e uploads.
+No ambiente local, se o Supabase nao estiver configurado, os arquivos podem ser gravados dentro do projeto por uma rota de upload separada. Em producao, configure o Supabase Storage e mantenha as credenciais somente nas variaveis de ambiente da plataforma.
 
 ## Regras de manutencao
 
