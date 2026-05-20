@@ -83,10 +83,6 @@ export async function createDriverFromForm(formData) {
     driver: {
       nome: driverName.value,
       versao,
-      originalName: upload.originalName || upload.fileName || "",
-      fileName: upload.fileName || upload.originalName || "",
-      fileSizeBytes: upload.fileSizeBytes || 0,
-      fileType: upload.fileType || "application/octet-stream",
       localPath: upload.storagePath,
       downloadUrl: upload.downloadUrl,
       storagePath: upload.storagePath || "",
@@ -94,8 +90,6 @@ export async function createDriverFromForm(formData) {
         {
           nome: versionLabel,
           downloadUrl: upload.downloadUrl,
-          fileSizeBytes: upload.fileSizeBytes || 0,
-          fileType: upload.fileType || "application/octet-stream",
           localPath: upload.storagePath,
           storagePath: upload.storagePath || ""
         }
@@ -123,13 +117,20 @@ export async function createDriverFromForm(formData) {
         driver: createdDriver
       };
     } catch (error) {
+      console.error("[DownloadCenter driver] falha ao cadastrar driver apos upload", {
+        marca: marca.value,
+        modelo: modelo.value,
+        storagePath: upload.storagePath,
+        error
+      });
+
       if (upload.storagePath) {
         await deleteDownloadFile(upload.storagePath);
       }
 
       return {
         ok: false,
-        error: `Arquivo enviado, mas nao foi possivel salvar o driver no banco. O envio foi revertido. ${error.message}`
+        error: "Arquivo enviado, mas nao foi possivel salvar o driver no banco. O envio foi revertido. Confira os detalhes no console."
       };
     }
   }

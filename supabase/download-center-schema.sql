@@ -36,20 +36,17 @@ create table if not exists public.guides (
 
 create table if not exists public.drivers (
   id uuid primary key default gen_random_uuid(),
-  marca text,
-  modelo text,
+  marca text not null,
+  modelo text not null,
   categoria text,
   descricao text,
   compatibilidade jsonb not null default '[]'::jsonb,
   keywords jsonb not null default '[]'::jsonb,
   destaque boolean not null default false,
-  driver_nome text not null,
+  driver_nome text,
   driver_versao text,
   download_url text,
   storage_path text,
-  file_name text,
-  file_size_bytes bigint,
-  file_type text,
   guia_vinculado_id uuid constraint drivers_guia_vinculado_id_fkey references public.guides(id) on delete set null,
   created_by uuid references public.admin_users(id) on delete set null,
   updated_by uuid references public.admin_users(id) on delete set null,
@@ -76,11 +73,6 @@ create table if not exists public.internal_apps (
   created_at timestamptz not null default now(),
   updated_at timestamptz not null default now()
 );
-
-alter table public.drivers
-  add column if not exists file_name text,
-  add column if not exists file_size_bytes bigint,
-  add column if not exists file_type text;
 
 alter table public.internal_apps
   add column if not exists file_name text,
@@ -146,7 +138,6 @@ create index if not exists drivers_categoria_idx on public.drivers (categoria);
 create index if not exists drivers_marca_modelo_idx on public.drivers (marca, modelo);
 create index if not exists drivers_guia_vinculado_id_idx on public.drivers (guia_vinculado_id);
 create index if not exists drivers_keywords_gin_idx on public.drivers using gin (keywords);
-create index if not exists drivers_file_size_bytes_idx on public.drivers (file_size_bytes);
 create index if not exists internal_apps_categoria_idx on public.internal_apps (categoria);
 create index if not exists internal_apps_active_idx on public.internal_apps (active);
 create index if not exists internal_apps_guia_vinculado_id_idx on public.internal_apps (guia_vinculado_id);

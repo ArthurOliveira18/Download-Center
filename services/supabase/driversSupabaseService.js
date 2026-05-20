@@ -50,6 +50,8 @@ export async function findSupabaseDriverDuplicate({ marca, modelo }) {
 export async function createSupabaseDriver(driver) {
   const supabase = getSupabaseAdminClient();
   const payload = mapAppDriverToSupabaseDriver(driver);
+  assertValidDriverInsertPayload(payload);
+
   const { data, error } = await supabase
     .from("drivers")
     .insert(payload)
@@ -66,9 +68,6 @@ export async function updateSupabaseDriver(id, driver) {
   delete payload.marca;
   delete payload.modelo;
   delete payload.download_url;
-  delete payload.file_name;
-  delete payload.file_size_bytes;
-  delete payload.file_type;
   delete payload.storage_path;
 
   const { data, error } = await supabase
@@ -97,9 +96,42 @@ function assertSupabaseSuccess(error, context = {}) {
   if (error) {
     console.error("[DownloadCenter driver] erro no banco Supabase", {
       action: context.action || "unknown",
-      error,
-      payloadKeys: context.payload ? Object.keys(context.payload) : []
+      code: error.code,
+      details: error.details,
+      hint: error.hint,
+      message: error.message,
+      payload: context.payload || null
     });
     throw new Error(error.message);
+  }
+}
+
+function assertValidDriverInsertPayload(payload) {
+  const allowedColumns = new Set([
+    "marca",
+    "modelo",
+    "categoria",
+    "descricao",
+    "compatibilidade",
+    "keywords",
+    "destaque",
+    "driver_nome",
+    "driver_versao",
+    "download_url",
+    "storage_path",
+    "guia_vinculado_id"
+  ]);
+  const invalidColumns = Object.keys(payload).filter((key) => !allowedColumns.has(key));
+
+  if (invalidColumns.length) {
+    throw new Error(`Payload de drivers contem colunas invalidas: ${invalidColumns.join(", ")}`);
+  }
+
+  if (!payload.marca || !payload.modelo) {
+    throw new Error("Marca e modelo sao obrigatorios para cadastrar o driver.");
+  }
+
+  if (!Array.isArray(payload.compatibilidade) || !Array.isArray(payload.keywords)) {
+    throw new Error("Compatibilidade e keywords devem ser arrays JSON.");
   }
 }
